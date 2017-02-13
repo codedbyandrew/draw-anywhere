@@ -1,0 +1,14 @@
+##Install Guide:
+
+Install Node.js LTS (https://nodejs.org/en/download/).
+Tested functional with version 6.9.4
+
+Note: if the npm install command fails with an ```EACCESS``` error you may have to run it again with ```sudo```:
+
+```
+$ cd /path/to/folder 
+$ git clone https://github.com/codedbyandrew/draw-anywhere.git 
+$ cd draw-anywhere 
+$ npm install 
+$ ./node_modules/.bin/electron .
+```
