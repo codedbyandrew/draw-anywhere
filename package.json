@@ -1,0 +1,8 @@
+{
+  "name": "draw-anywhere",
+  "version": "0.1.0",
+  "main": "main.js",
+  "dependencies": {
+    "electron": "^1.4.15"
+  }
+}
