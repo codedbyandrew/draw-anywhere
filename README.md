@@ -1,7 +1,7 @@
 ##Install Guide:
 
 Install Node.js LTS (https://nodejs.org/en/download/).
-Tested functional with version 6.9.4
+Tested functional with Node version 6.9.4 on macOS.
 
 Note: if the npm install command fails with an ```EACCESS``` error you may have to run it again with ```sudo```:
 

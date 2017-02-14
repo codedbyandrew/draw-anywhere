@@ -1,8 +1,9 @@
 {
-  "name": "draw-anywhere",
+  "name": "Draw Anywhere",
   "version": "0.1.0",
   "main": "main.js",
   "dependencies": {
-    "electron": "^1.4.15"
+    "electron": "^1.4.15",
+    "font-awesome": "^4.7.0"
   }
 }
