@@ -1,12 +1,14 @@
-const electron = require('electron')
+const electron = require('electron');
 const {app, BrowserWindow} = electron;
 const path = require('path');
 const url = require('url');
+const robot = require("robotjs");
+const serialport = require('serialport');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let toolbar;
-let drawable;
+let toolpanel = null;
+let drawable = null;
 
 function createBackgroundWindow(width, height) {
     drawable = new BrowserWindow({

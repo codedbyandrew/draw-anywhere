@@ -10,5 +10,5 @@ $ cd /path/to/folder
 $ git clone https://github.com/codedbyandrew/draw-anywhere.git 
 $ cd draw-anywhere 
 $ npm install 
-$ ./node_modules/.bin/electron .
+$ npm start
 ```
