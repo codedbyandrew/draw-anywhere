@@ -3,9 +3,9 @@
     const electron = require('electron');
     const ipc = electron.ipcRenderer;
 
-    var app = angular.module('drawable', ['ui.bootstrap', 'ngAnimate', 'pw.canvas-painter', 'colorpicker.module']);
+    var app = angular.module('drawable', ['ui.bootstrap', 'ngAnimate', 'pw.canvas-painter', 'colorpicker.module', 'cfp.hotkeys']);
 
-    app.controller('DrawableCtrl', ['$scope', '$window', function ($scope, $window) {
+    app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', function ($scope, $window, hotkeys) {
         var self = this;
 
         self.strokeAdjustTemplate = "strokeAdjustTemplate.html";
@@ -21,11 +21,13 @@
             undo: true, // boolean or a number of versions to keep in memory
             customCanvasId: 'myCustomId' // define a custom value for the id attribute of the canvas element (default: 'pwCanvasMain')
         };
+        self.version = 0;
 
         self.cover = false;
         self.vibrancy = true;
+        self.circularToolbar = false;
 
-        this.dragOptions = {
+        self.dragOptions = {
             start: function (e) {
                 self.cover = true;
                 $scope.$apply();
@@ -40,6 +42,24 @@
             },
             container: 'drawable-region'
         };
+
+        hotkeys.add({
+            combo: 'command+z',
+            description: 'Undo draw strokes',
+            callback: function () {
+                if (self.version > 0) {
+                    self.version--;
+                }
+            }
+        });
+
+        hotkeys.add({
+            combo: 'alt',
+            description: 'Open circular toolbar',
+            callback: function () {
+                self.circularToolbar = !self.circularToolbar;
+            }
+        });
 
         var w = angular.element($window);
         w.bind('resize', function () {

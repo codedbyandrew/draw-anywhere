@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href="./node_modules/angular-bootstrap-colorpicker/css/colorpicker.min.css" rel="stylesheet">
+    <link href="./node_modules/angular-hotkeys/build/hotkeys.min.css" rel="stylesheet">
 </head>
 <body ng-controller="DrawableCtrl as drawCtrl">
 <script type="text/ng-template" id="strokeAdjustTemplate.html">
@@ -59,7 +60,7 @@
         <i class="fa fa-floppy-o" aria-hidden="true"></i>
     </button>
 </div>
-<div id="circular-toolbar" ng-draggable="drawCtrl.dragOptions">
+<div id="circular-toolbar" ng-draggable="drawCtrl.dragOptions" ng-show="drawCtrl.circularToolbar">
     <button class="cog" uib-popover-template="drawCtrl.configurationTemplate" popover-placement="bottom"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-cog" aria-hidden="true"></i>
@@ -96,7 +97,9 @@
 <script type="text/javascript" src="./node_modules/angular-animate/angular-animate.js"></script>
 <script type="text/javascript" src="./node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
 <script type="text/javascript" src="./node_modules/angular-canvas-painter/dist/angular-canvas-painter.min.js"></script>
-<script type="text/javascript" src="./node_modules/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
+<script type="text/javascript"
+        src="./node_modules/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
+<script type="text/javascript" src="./node_modules/angular-hotkeys/build/hotkeys.min.js"></script>
 <script type="text/javascript" src="./drawable.js"></script>
 </body>
 </html>
