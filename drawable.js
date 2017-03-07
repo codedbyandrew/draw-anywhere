@@ -9,6 +9,7 @@
         var self = this;
 
         self.strokeAdjustTemplate = "strokeAdjustTemplate.html";
+        self.configurationTemplate = "configurationTemplate.html";
 
         self.canvasOptions = {
             width: $window.innerWidth, //px
@@ -22,6 +23,7 @@
         };
 
         self.cover = false;
+        self.vibrancy = true;
 
         this.dragOptions = {
             start: function (e) {
@@ -36,7 +38,7 @@
                 self.cover = false;
                 $scope.$apply();
             },
-            container: 'drawable-region',
+            container: 'drawable-region'
         };
 
         var w = angular.element($window);
@@ -49,6 +51,12 @@
                 document.getElementById(self.canvasOptions.customCanvasId + "Tmp").height = $window.innerHeight - 36;
             }
         });
+
+        self.toggleVibrancy = function () {
+            self.vibrancy = !self.vibrancy;
+            ipc.send('toggleVibrancy', self.vibrancy);
+        };
+
     }]);
 
     app.directive('ngDraggable', function ($document) {

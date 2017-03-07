@@ -20,11 +20,17 @@
         <input type="range" min=".5" max="20" ng-model="drawCtrl.canvasOptions.lineWidth">
     </div>
 </script>
+<script type="text/ng-template" id="configurationTemplate.html">
+    <div class="form-group">
+        <label>Calibrate</label>
+    </div>
+</script>
 <div id="title">
     <span>Draw Anywhere</span>
 </div>
 <div id="toolbar" ng-draggable="drawCtrl.dragOptions" class="drawable">
-    <button>
+    <button uib-popover-template="drawCtrl.configurationTemplate" popover-placement="bottom-left"
+            popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-cog" aria-hidden="true" ng-class=""></i>
     </button>
     <button>
@@ -46,15 +52,16 @@
     <button>
         <i class="fa fa-trash" aria-hidden="true" ng-click="drawCtrl.version = 0"></i>
     </button>
-    <button>
-        <i class="fa fa-eye-slash" aria-hidden="true"></i>
+    <button ng-click="drawCtrl.toggleVibrancy()">
+        <i class="fa" ng-class="drawCtrl.vibrancy ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
     </button>
     <button>
         <i class="fa fa-floppy-o" aria-hidden="true"></i>
     </button>
 </div>
 <div id="circular-toolbar" ng-draggable="drawCtrl.dragOptions">
-    <button class="cog">
+    <button class="cog" uib-popover-template="drawCtrl.configurationTemplate" popover-placement="bottom"
+            popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-cog" aria-hidden="true"></i>
     </button>
     <button class="mouse-pointer">
@@ -64,8 +71,8 @@
             ng-model="drawCtrl.canvasOptions.color">
         <i class="fa fa-eyedropper" aria-hidden="true" ng-style="{color: drawCtrl.canvasOptions.color}"></i>
     </button>
-    <button class="eye">
-        <i class="fa fa-eye-slash" aria-hidden="true"></i>
+    <button ng-click="drawCtrl.toggleVibrancy()" class="eye">
+        <i class="fa" ng-class="drawCtrl.vibrancy ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
     </button>
     <button class="undo" ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
         <i class="fa fa-undo" aria-hidden="true"></i>

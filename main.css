@@ -194,6 +194,7 @@ button span .on {
     right: 0;
     bottom: 0;
     z-index: 2;
+    cursor: crosshair;
 }
 
 #cover {

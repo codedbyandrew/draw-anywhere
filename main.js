@@ -1,5 +1,6 @@
 const electron = require('electron');
 const {app, BrowserWindow} = electron;
+const ipc = electron.ipcMain;
 const path = require('path');
 const url = require('url');
 const robot = require("robotjs");
@@ -22,7 +23,7 @@ function createBackgroundWindow(width, height) {
         fullscreenable: false,
         hasShadow: false,
         useContentSize: true,
-        vibrancy:'dark'
+        vibrancy: 'dark'
     });
 
     // and load the index.html of the app.
@@ -45,50 +46,78 @@ function createBackgroundWindow(width, height) {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        drawable = null
+        drawable = null;
+        if (toolpanel !== null) {
+            toolpanel.close();
+        }
     });
+
+    drawable.on('blur', function () {
+        /*drawable.hide();
+         if (toolpanel === null) {
+         launchWindows(toolpanel === null, false);
+         } else {
+         toolpanel.show();
+         // TODO: update location to match in-window toolpanel
+         }*/
+    });
+
+    drawable.on('focus', function () {
+        if (toolpanel !== null) {
+            toolpanel.hide();
+        }
+    })
 
 }
 
 function createToolWindow(x, y, width) {
     // Create the browser window.
-    toolbar = new BrowserWindow({
-        width: 460,
+    toolpanel = new BrowserWindow({
+        width: 219,
         height: 37,
         titleBarStyle: 'hidden-inset',
         useContentSize: true,
+        show: false,
         frame: true,
         toolbar: true,
         resizable: false,
         fullscreenable: false,
         alwaysOnTop: true,
-        backgroundColor: '#242424'
+        backgroundColor: '#242424',
+        acceptFirstMouse: true
     });
 
     // and load the index.html of the app.
-    toolbar.loadURL(url.format({
+    toolpanel.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file:',
         slashes: true
     }));
 
-    toolbar.setPosition(Math.round(width / 2 - 460 / 2 + x), y + 20);
+    toolpanel.setPosition(Math.round(width / 2 - 219 / 2 + x), y + 20);
 
     // Open the DevTools.
-    // toolbar.webContents.openDevTools();
+    // toolpanel.webContents.openDevTools();
+
+    toolpanel.once('ready-to-show', function () {
+        toolpanel.show();
+    });
 
     // Emitted when the window is closed.
-    toolbar.on('closed', function () {
+    toolpanel.on('closed', function () {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        toolbar = null
+        toolpanel = null;
+        if (drawable !== null) {
+            drawable.focus();
+        }
     });
 }
 
-function launchWindows(openToolbar, openDragable) {
+function launchWindows(openToolbar, openDraggable) {
     const {x, y, width, height} = electron.screen.getPrimaryDisplay().workArea;
-    if (openDragable) {
+    if (openDraggable) {
         createBackgroundWindow(width, height);
     }
     if (openToolbar) {
@@ -100,7 +129,21 @@ function launchWindows(openToolbar, openDragable) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function () {
-    launchWindows(true, true);
+    launchWindows(false, true);
+
+    ipc.on("toolbarDraw", function (event, arg) {
+        event.returnValue = '';
+        toolpanel.hide();
+        drawable.show();
+    });
+
+    ipc.on('toggleVibrancy', function (event, arg) {
+        if (arg) {
+            drawable.setVibrancy('dark');
+        } else {
+            drawable.setVibrancy('');
+        }
+    });
 });
 
 // Quit when all windows are closed.
@@ -108,15 +151,22 @@ app.on('window-all-closed', function () {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
 });
 
-app.on('activate',
-    function () {
+app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
-        launchWindows(toolbar === null, drawable === null);
+        if (toolpanel !== null) {
+            toolpanel.show();
+        }
+
+        if (drawable !== null) {
+            drawable.show();
+        }
+        launchWindows(toolpanel === null, drawable === null);
+
     }
 );
 
