@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="drawable">
+<head>
+    <meta charset="UTF-8">
+    <title>Drawable Area</title>
+    <link href="main.css" rel="stylesheet">
+    <link href="./node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="./node_modules/angular-bootstrap-colorpicker/css/colorpicker.min.css" rel="stylesheet">
+</head>
+<body ng-controller="DrawableCtrl as drawCtrl">
+<script type="text/ng-template" id="strokeAdjustTemplate.html">
+    <div class="form-group">
+        <label>Width</label>
+        <div class="center-parent">
+            <div id="preview-width"
+                 ng-style="{width: drawCtrl.canvasOptions.lineWidth+'px', height: drawCtrl.canvasOptions.lineWidth+'px'}"></div>
+        </div>
+        <input type="range" min=".5" max="20" ng-model="drawCtrl.canvasOptions.lineWidth">
+    </div>
+</script>
+<div id="title">
+    <span>Draw Anywhere</span>
+</div>
+<div id="toolbar" ng-draggable="drawCtrl.dragOptions" class="drawable">
+    <button>
+        <i class="fa fa-cog" aria-hidden="true" ng-class=""></i>
+    </button>
+    <button>
+        <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+    </button>
+    <button>
+        <i class="fa fa-pencil" aria-hidden="true"></i>
+    </button>
+    <button colorpicker="rgba" type="button" colorpicker-position="bottom" ng-model="drawCtrl.canvasOptions.color">
+        <i class="fa fa-eyedropper" aria-hidden="true" ng-style="{color: drawCtrl.canvasOptions.color}"></i>
+    </button>
+    <button ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
+        <i class="fa fa-undo" aria-hidden="true"></i>
+    </button>
+    <button uib-popover-template="drawCtrl.strokeAdjustTemplate" popover-placement="bottom"
+            popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
+        <i class="fa fa-adjust" aria-hidden="true"></i>
+    </button>
+    <button>
+        <i class="fa fa-trash" aria-hidden="true" ng-click="drawCtrl.version = 0"></i>
+    </button>
+    <button>
+        <i class="fa fa-eye-slash" aria-hidden="true"></i>
+    </button>
+    <button>
+        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+    </button>
+</div>
+<div id="circular-toolbar" ng-draggable="drawCtrl.dragOptions">
+    <button class="cog">
+        <i class="fa fa-cog" aria-hidden="true"></i>
+    </button>
+    <button class="mouse-pointer">
+        <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+    </button>
+    <button class="eyedropper" colorpicker="rgba" type="button" colorpicker-position="left"
+            ng-model="drawCtrl.canvasOptions.color">
+        <i class="fa fa-eyedropper" aria-hidden="true" ng-style="{color: drawCtrl.canvasOptions.color}"></i>
+    </button>
+    <button class="eye">
+        <i class="fa fa-eye-slash" aria-hidden="true"></i>
+    </button>
+    <button class="undo" ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
+        <i class="fa fa-undo" aria-hidden="true"></i>
+    </button>
+    <button class="adjust" uib-popover-template="drawCtrl.strokeAdjustTemplate" popover-placement="top"
+            popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
+        <i class="fa fa-adjust" aria-hidden="true"></i>
+    </button>
+    <button class="trash" ng-click="drawCtrl.version = 0">
+        <i class="fa fa-trash" aria-hidden="true"></i>
+    </button>
+    <button class="floppy">
+        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+    </button>
+</div>
+<div id="drawable-region">
+</div>
+<div id="cover" ng-show="drawCtrl.cover"></div>
+<div pw-canvas options="drawCtrl.canvasOptions" class="canvas" version="drawCtrl.version"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
+<script type="text/javascript" src="./node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+<script type="text/javascript" src="./node_modules/angular-canvas-painter/dist/angular-canvas-painter.min.js"></script>
+<script src="./node_modules/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
+<script type="text/javascript" src="./drawable.js"></script>
+</body>
+</html>
+

@@ -7,16 +7,22 @@
     "url": "https://github.com/codedbyandrew/draw-anywhere"
   },
   "dependencies": {
-    "electron": "^1.4.15",
+    "angular-bootstrap-colorpicker": "^3.0.25",
+    "angular-canvas-painter": "^0.6.0",
+    "angular-ui-bootstrap": "^2.5.0",
     "font-awesome": "^4.7.0",
+    "md-color-picker": "^0.2.6",
     "robotjs": "^0.4.5",
     "serialport": "^4.0.7"
   },
   "devDependencies": {
+    "electron": "^1.4.15",
+    "electron-packager": "^8.5.2",
     "electron-rebuild": "^1.5.7"
   },
   "scripts": {
     "start": "electron .",
-    "install": "electron-rebuild"
+    "install": "electron-rebuild",
+    "pack": "electron-packager . 'Draw Anywhere' --overwrite"
   }
 }

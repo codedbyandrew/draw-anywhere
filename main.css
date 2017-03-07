@@ -1,5 +1,5 @@
 html, body {
-    background: rgba(0, 0, 0, 0);
+    background: rgba(0, 0, 0, 0) !important;
     color: white;
     width: 100%;
     height: 100%;
@@ -8,18 +8,80 @@ html, body {
     font-family: 'BlinkMacSystemFont', 'Lucida Grande', 'Segoe UI', Ubuntu, Cantarell, sans-serif;
 }
 
-#toolbar {
-    background: rgba(36, 36, 36, .97);
+#title-bar {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    height: 22px;
+    background: #f5f4f5; /* Old browsers */
+    background: linear-gradient(to bottom, #f5f4f5 0%, #e8e6e8 1%, #d2d0d2 99%, #b3b1b3 100%);
+    -webkit-app-region: drag;
+    color: #2a2a2a;
+    font-size: 10pt;
+    font-weight: 400;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
+    z-index: 5;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#title {
+    width: 100%;
+    position: absolute;
+    top: 0;
     height: 36px;
-    width: 372px;
+    -webkit-app-region: drag;
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, .8);
+    color: #fff;
+    font-size: 12pt;
+    font-weight: 300;
+    letter-spacing: .1em;
+    overflow: hidden;
+    text-align: center;
+    z-index: 5;
+    user-select: none;
+    -webkit-user-select: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .3);
+}
+
+#title span {
+    display: inline-block;
+    line-height: 36px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#title-bar span {
+    display: inline-block;
+    line-height: 22px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#toolbar {
+    background: rgba(36, 36, 36, 1);
+    height: 36px;
+    width: 430px;
     border-radius: 4px;
     -webkit-user-select: none;
-    -webkit-app-region: drag;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: left;
     padding: 0 10px 0 78px;
+    z-index: 6;
+    position: absolute;
+    cursor: pointer;
+}
+
+#toolbar.drawable {
+    -webkit-app-region: no-drag;
+    padding: 0 10px 0 0;
+    left: calc(50% - 215px);
+    top: 36px;
+    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
 
 .separator-vertical {
@@ -37,15 +99,129 @@ html, body {
     font-size: 18px;
 }
 
-#toolbar button i {
+button:disabled {
+    opacity: .5;
+}
+
+button span .on {
+
+}
+
+#circular-toolbar button {
+    position: absolute;
+    padding: 0;
+    outline: none;
+    background: none;
+    font-size: 18px;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    border: none;
+}
+
+#toolbar button i, #circular-toolbar button i {
     color: white;
 }
 
 #drawable-region {
     background: rgba(0, 0, 0, 0);
-    border: 1px solid rgb(102, 102, 102);
-    width: calc(100% - 2px);
-    height: calc(100% - 2px);
-    border-radius: 4px;
+    /*border: 1px solid rgba(36, 36, 36, .97);*/
+    position: absolute;
+    top: 36px;
+    bottom: 0;
+    width: 100%;
     cursor: crosshair;
+}
+
+#circular-toolbar {
+    position: absolute;
+    background: rgba(36, 36, 36, .97);
+    width: 150px;
+    height: 150px;
+    left: calc(50% - 75px);
+    border-radius: 75px;
+    top: calc(50% - 75px + 36px);
+    z-index: 4;
+    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
+}
+
+#circular-toolbar .cog {
+    top: 110px;
+    left: 60px;
+}
+
+#circular-toolbar .adjust {
+    top: 10px;
+    left: 60px;
+}
+
+#circular-toolbar .undo {
+    top: 25px;
+    left: 25px;
+}
+
+#circular-toolbar .trash {
+    top: 25px;
+    left: 100px;
+}
+
+#circular-toolbar .eyedropper {
+    top: 60px;
+    left: 10px;
+}
+
+#circular-toolbar .eye {
+    top: 60px;
+    left: 110px;
+}
+
+#circular-toolbar .floppy {
+    top: 95px;
+    left: 100px;
+}
+
+#circular-toolbar .mouse-pointer {
+    top: 95px;
+    left: 25px;
+}
+
+.canvas {
+    background: transparent;
+    position: absolute;
+    top: 36px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+}
+
+#cover {
+    background: transparent;
+    position: absolute;
+    top: 36px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+}
+
+.center-parent {
+    position: relative;
+    float: right;
+    height: 20px;
+    width: 20px;
+    border: 1px solid black;
+    border-radius: 1000px;
+}
+
+#preview-width {
+    background-color: black;
+    border-radius: 1000px;
+    min-width: 1px;
+    min-height: 1px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
 }

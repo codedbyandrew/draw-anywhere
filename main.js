@@ -15,19 +15,27 @@ function createBackgroundWindow(width, height) {
         width: width,
         height: height,
         transparent: true,
-        frame: false,
-        toolbar: false,
+        titleBarStyle: 'hidden-inset',
+        show: false,
+        frame: true,
         resizable: true,
         fullscreenable: false,
         hasShadow: false,
+        useContentSize: true,
+        vibrancy:'dark'
     });
 
     // and load the index.html of the app.
     drawable.loadURL(url.format({
-        pathname: path.join(__dirname, 'background.html'),
+        pathname: path.join(__dirname, 'drawable.html'),
         protocol: 'file:',
         slashes: true
     }));
+
+    drawable.once('ready-to-show', function () {
+        drawable.show();
+    });
+
 
     // Open the DevTools.
     // drawable.webContents.openDevTools();
