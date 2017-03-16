@@ -35,20 +35,20 @@
         <i class="fa fa-cog" aria-hidden="true" ng-class=""></i>
     </button>
     <button>
-        <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+        <i class="fa fa-chain-broken" aria-hidden="true"></i>
     </button>
     <button>
-        <i class="fa fa-pencil" aria-hidden="true"></i>
+        <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
     </button>
     <button colorpicker="rgba" type="button" colorpicker-position="bottom" ng-model="drawCtrl.canvasOptions.color">
         <i class="fa fa-eyedropper" aria-hidden="true" ng-style="{color: drawCtrl.canvasOptions.color}"></i>
     </button>
-    <button ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
-        <i class="fa fa-undo" aria-hidden="true"></i>
-    </button>
     <button uib-popover-template="drawCtrl.strokeAdjustTemplate" popover-placement="bottom"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-adjust" aria-hidden="true"></i>
+    </button>
+    <button ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
+        <i class="fa fa-undo" aria-hidden="true"></i>
     </button>
     <button>
         <i class="fa fa-trash" aria-hidden="true" ng-click="drawCtrl.version = 0"></i>
@@ -56,8 +56,8 @@
     <button ng-click="drawCtrl.toggleVibrancy()">
         <i class="fa" ng-class="drawCtrl.vibrancy ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
     </button>
-    <button>
-        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+    <button ng-click="drawCtrl.copyToClipboard()">
+        <i class="fa fa-clipboard" aria-hidden="true"></i>
     </button>
 </div>
 <div id="circular-toolbar" ng-draggable="drawCtrl.dragOptions" ng-show="drawCtrl.circularToolbar">
@@ -85,8 +85,8 @@
     <button class="trash" ng-click="drawCtrl.version = 0">
         <i class="fa fa-trash" aria-hidden="true"></i>
     </button>
-    <button class="floppy">
-        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+    <button class="clipboard" ng-click="drawCtrl.copyToClipboard()">
+        <i class="fa fa-clipboard" aria-hidden="true"></i>
     </button>
 </div>
 <div id="drawable-region">

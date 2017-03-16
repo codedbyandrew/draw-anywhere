@@ -12,3 +12,4 @@ $ cd draw-anywhere
 $ npm install 
 $ npm start
 ```
+Entering text in the terminal will forward to the serial port if a terminal port has been opened.

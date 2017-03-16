@@ -2,6 +2,8 @@
 
     const electron = require('electron');
     const ipc = electron.ipcRenderer;
+    const clipboard = electron.clipboard;
+    const nativeImage = electron.nativeImage;
 
     var app = angular.module('drawable', ['ui.bootstrap', 'ngAnimate', 'pw.canvas-painter', 'colorpicker.module', 'cfp.hotkeys']);
 
@@ -75,6 +77,12 @@
         self.toggleVibrancy = function () {
             self.vibrancy = !self.vibrancy;
             ipc.send('toggleVibrancy', self.vibrancy);
+        };
+
+        self.copyToClipboard = function () {
+            var canvas = document.getElementById(self.canvasOptions.customCanvasId);
+            var image = canvas.toDataURL("image/png");
+            clipboard.writeImage(nativeImage.createFromDataURL(image));
         };
 
     }]);

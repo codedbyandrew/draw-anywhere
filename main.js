@@ -78,7 +78,7 @@ usbPort.on('error', function (err) {
 });
 
 function writeSerial(data) {
-    usbPort.write(input, function (err) {
+    usbPort.write(data, function (err) {
         if (err) {
             return console.log('Error on write: ', err.message);
         }
