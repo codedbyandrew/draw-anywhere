@@ -29,8 +29,13 @@
 <div id="title">
     <span>Draw Anywhere</span>
 </div>
-<div id="toolbar" ng-draggable="drawCtrl.dragOptions" class="drawable" ng-hide="drawCtrl.circularToolbar">
-    <button uib-popover-template="drawCtrl.configurationTemplate" popover-placement="bottom-left"
+<div id="toolbar"
+     ng-draggable="drawCtrl.dragOptions"
+     class="drawable"
+     ng-hide="drawCtrl.circularToolbar"
+     ng-class="{'verticalToolbar':drawCtrl.verticalToolbar}">
+    <button uib-popover-template="drawCtrl.configurationTemplate"
+            popover-placement="{{drawCtrl.verticalToolbar ? 'left': 'bottom-left'}}"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-cog" aria-hidden="true" ng-class=""></i>
     </button>
@@ -40,10 +45,12 @@
     <button>
         <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
     </button>
-    <button colorpicker="rgba" type="button" colorpicker-position="bottom" ng-model="drawCtrl.canvasOptions.color">
+    <button colorpicker="rgba" type="button" colorpicker-position="{{drawCtrl.verticalToolbar ? 'left': 'bottom'}}"
+            ng-model="drawCtrl.canvasOptions.color">
         <i class="fa fa-eyedropper" aria-hidden="true" ng-style="{color: drawCtrl.canvasOptions.color}"></i>
     </button>
-    <button uib-popover-template="drawCtrl.strokeAdjustTemplate" popover-placement="bottom"
+    <button uib-popover-template="drawCtrl.strokeAdjustTemplate"
+            popover-placement="{{drawCtrl.verticalToolbar ? 'left': 'bottom'}}"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-adjust" aria-hidden="true"></i>
     </button>
@@ -58,6 +65,10 @@
     </button>
     <button ng-click="drawCtrl.copyToClipboard()">
         <i class="fa fa-clipboard" aria-hidden="true"></i>
+    </button>
+    <button ng-click="drawCtrl.verticalToolbar = !drawCtrl.verticalToolbar">
+        <i class="fa" ng-class="drawCtrl.verticalToolbar ? 'fa-chevron-circle-left' : 'fa-chevron-circle-down'"
+           aria-hidden="true"></i>
     </button>
 </div>
 <div id="circular-toolbar" ng-draggable="drawCtrl.dragOptions" ng-show="drawCtrl.circularToolbar">

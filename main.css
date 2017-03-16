@@ -16,31 +16,13 @@ html, body {
     overflow: hidden;
     perspective: 500px;
     -webkit-backface-visibility: hidden;
+    border-radius: 4px;
 }
 
 body.no-vibrancy {
     /*box-shadow: inset 0 0 5px rgba(0,0,0,.5);*/
     transition: background ease-out 0.25s;
     background: rgba(30, 30, 30, .45) !important;
-}
-
-#title-bar {
-    width: 100%;
-    position: absolute;
-    top: 0;
-    height: 22px;
-    background: #f5f4f5; /* Old browsers */
-    background: linear-gradient(to bottom, #f5f4f5 0%, #e8e6e8 1%, #d2d0d2 99%, #b3b1b3 100%);
-    -webkit-app-region: drag;
-    color: #2a2a2a;
-    font-size: 10pt;
-    font-weight: 400;
-    overflow: hidden;
-    text-align: center;
-    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
-    z-index: 5;
-    user-select: none;
-    -webkit-user-select: none;
 }
 
 #title {
@@ -59,7 +41,15 @@ body.no-vibrancy {
     z-index: 5;
     user-select: none;
     -webkit-user-select: none;
-    border-bottom: 1px solid rgba(0, 0, 0, .3);
+    border-bottom: 1px solid rgba(255, 255, 255, .05);
+    background: rgba(36, 36, 36, .86);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.no-vibrancy > #title {
+    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
+    border: none;
 }
 
 #title span {
@@ -80,7 +70,7 @@ body.no-vibrancy {
 #toolbar {
     background: rgba(36, 36, 36, .86);
     height: 36px;
-    width: 430px;
+    width: 480px;
     border-radius: 4px;
     -webkit-user-select: none;
     flex-shrink: 0;
@@ -89,8 +79,16 @@ body.no-vibrancy {
     justify-content: left;
     padding: 0 10px 0 78px;
     z-index: 6;
-    position: absolute;
     cursor: pointer;
+    position: relative;
+}
+
+.verticalToolbar i {
+    transform: rotate(90deg);
+}
+
+.drawable i {
+    transition: transform ease .5s;
 }
 
 #toolbar.drawable {
@@ -99,6 +97,14 @@ body.no-vibrancy {
     left: calc(50% - 215px);
     top: 36px;
     box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
+    transition: transform ease .5s, box-shadow ease .5s;
+    transform-origin: top right;
+}
+
+#toolbar.verticalToolbar {
+    transform-origin: top right;
+    transform: rotate(-90deg);
+    box-shadow: -26px 0 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
 
 .separator-vertical {
@@ -111,10 +117,11 @@ body.no-vibrancy {
     border: none;
     padding: 0;
     margin: 0 6px;
-    height: 100%;
+    height: 36px;
     outline: none;
     background: none;
     font-size: 18px;
+    float: left;
 }
 
 button:disabled {
@@ -167,7 +174,7 @@ button span .on {
 
 #circular-toolbar {
     position: absolute;
-    background: rgba(36, 36, 36, .97);
+    background: rgba(36, 36, 36, .86);
     width: 150px;
     height: 150px;
     left: calc(50% - 75px);
@@ -279,3 +286,23 @@ button span .on {
     transform: translateZ(0px);
     opacity: 1;
 }
+
+@-webkit-keyframes screenFlash {
+    0% {
+        background-color: white;
+        opacity: 1;
+    }
+
+    100% {
+        background-color: transparent;
+        opacity: 0;
+    }
+}
+
+.flash {
+    -webkit-animation-name: screenFlash;
+    -webkit-animation-duration: 900ms;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-out;
+}
+

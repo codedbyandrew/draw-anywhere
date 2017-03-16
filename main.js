@@ -97,7 +97,7 @@ function createBackgroundWindow(width, height) {
         fullscreenable: false,
         hasShadow: false,
         useContentSize: true,
-        vibrancy: 'dark'
+        vibrancy: 'ultra-dark'
     });
 
     // and load the index.html of the app.
@@ -157,8 +157,10 @@ function createToolWindow(x, y, width) {
         resizable: false,
         fullscreenable: false,
         alwaysOnTop: true,
-        backgroundColor: '#242424',
-        acceptFirstMouse: true
+        //backgroundColor: '#242424',
+        acceptFirstMouse: true,
+        vibrancy: 'ultra-dark',
+        transparent: true
     });
 
     // and load the index.html of the app.
@@ -213,7 +215,7 @@ app.on('ready', function () {
 
     ipc.on('toggleVibrancy', function (event, arg) {
         if (arg) {
-            drawable.setVibrancy('dark');
+            drawable.setVibrancy('ultra-dark');
         } else {
             drawable.setVibrancy('');
         }
