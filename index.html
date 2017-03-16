@@ -5,6 +5,10 @@
     <title>Toolbar</title>
     <link href="main.css" rel="stylesheet">
     <link href="./node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <script type="text/javascript">
+        const electron = require('electron');
+        const ipc = electron.ipcRenderer;
+    </script>
 </head>
 <body>
 <div id="toolbar">
@@ -15,23 +19,8 @@
     <button>
         <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
     </button>
-    <button>
+    <button onclick="ipc.sendSync('toolbarDraw')">
         <i class="fa fa-pencil" aria-hidden="true"></i>
-    </button>
-    <button>
-        <i class="fa fa-eraser" aria-hidden="true"></i>
-    </button>
-    <button>
-        <i class="fa fa-undo" aria-hidden="true"></i>
-    </button>
-    <button>
-        <i class="fa fa-repeat" aria-hidden="true"></i>
-    </button>
-    <button>
-        <i class="fa fa-trash" aria-hidden="true"></i>
-    </button>
-    <button>
-        <i class="fa fa-floppy-o" aria-hidden="true"></i>
     </button>
 </div>
 </body>

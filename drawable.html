@@ -10,7 +10,7 @@
     <link href="./node_modules/angular-bootstrap-colorpicker/css/colorpicker.min.css" rel="stylesheet">
     <link href="./node_modules/angular-hotkeys/build/hotkeys.min.css" rel="stylesheet">
 </head>
-<body ng-controller="DrawableCtrl as drawCtrl">
+<body ng-controller="DrawableCtrl as drawCtrl" ng-class="drawCtrl.vibrancy ? 'vibrancy' : 'no-vibrancy'">
 <script type="text/ng-template" id="strokeAdjustTemplate.html">
     <div class="form-group">
         <label>Width</label>
@@ -29,7 +29,7 @@
 <div id="title">
     <span>Draw Anywhere</span>
 </div>
-<div id="toolbar" ng-draggable="drawCtrl.dragOptions" class="drawable">
+<div id="toolbar" ng-draggable="drawCtrl.dragOptions" class="drawable" ng-hide="drawCtrl.circularToolbar">
     <button uib-popover-template="drawCtrl.configurationTemplate" popover-placement="bottom-left"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-cog" aria-hidden="true" ng-class=""></i>

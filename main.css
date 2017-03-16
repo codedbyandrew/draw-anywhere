@@ -1,3 +1,10 @@
+* {
+    margin: 0;
+    padding: 0;
+    text-rendering: optimizeLegibility;
+    box-sizing: border-box;
+}
+
 html, body {
     background: rgba(0, 0, 0, 0) !important;
     color: white;
@@ -6,6 +13,14 @@ html, body {
     overflow: hidden;
     margin: 0;
     font-family: 'BlinkMacSystemFont', 'Lucida Grande', 'Segoe UI', Ubuntu, Cantarell, sans-serif;
+    overflow: hidden;
+    perspective: 500px;
+    -webkit-backface-visibility: hidden;
+}
+
+body.no-vibrancy {
+    /*box-shadow: inset 0 0 5px rgba(0,0,0,.5);*/
+    background: rgba(30, 30, 30, .45) !important;
 }
 
 #title-bar {
@@ -61,7 +76,7 @@ html, body {
 }
 
 #toolbar {
-    background: rgba(36, 36, 36, 1);
+    background: rgba(36, 36, 36, .97);
     height: 36px;
     width: 430px;
     border-radius: 4px;
@@ -225,4 +240,26 @@ button span .on {
     top: 50%;
     left: 50%;
     transform: translateY(-50%) translateX(-50%);
+}
+
+#circular-toolbar.ng-hide-add, #toolbar.drawable.ng-hide-add {
+    transform: translateZ(0px);
+    opacity: 1;
+    transition: all linear 0.5s;
+}
+
+#circular-toolbar.ng-hide-add.ng-hide-add-active, #toolbar.drawable.ng-hide-add.ng-hide-add-active {
+    transform: translateZ(-1000px);
+    opacity: 0;
+}
+
+#circular-toolbar.ng-hide-remove, #toolbar.drawable.ng-hide-remove {
+    transform: translateZ(-1000px);
+    transition: all ease-out 0.5s;
+    opacity: 0;
+}
+
+#circular-toolbar.ng-hide-remove.ng-hide-remove-active, #toolbar.drawable.ng-hide-remove.ng-hide-remove-active {
+    transform: translateZ(0px);
+    opacity: 1;
 }
