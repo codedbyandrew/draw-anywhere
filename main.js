@@ -4,12 +4,86 @@ const ipc = electron.ipcMain;
 const path = require('path');
 const url = require('url');
 const robot = require("robotjs");
-const serialport = require('serialport');
+const SerialPort = require("serialport");
+const readline = require('readline');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let toolpanel = null;
 let drawable = null;
+var previousQuit = false;
+
+// https://github.com/EmergingTechnologyAdvisors/node-serialport#new_module_serialport--SerialPort_new
+var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
+    {
+        baudRate: 115200,
+        parser: SerialPort.parsers.raw
+    }
+);
+
+// interface for reading from the terminal
+// https://nodejs.org/api/readline.html#readline_readline_createinterface_options
+const terminal = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'DE1> '
+});
+
+// Get info about available ports, currently only used in debugging
+SerialPort.list(function (err, ports) {
+    ports.forEach(function (port) {
+        console.log(port.comName + ", " + port.manufacturer + ", " + port.serialNumber);
+    });
+});
+
+terminal.on('line', function (input) {
+    writeSerial(input + '\r');
+    previousQuit = false;
+});
+
+terminal.on('SIGINT', function () {
+    if (previousQuit) {
+        usbPort.close();
+        terminal.close();
+    } else {
+        console.log('sending stop to board, ctrl-c again to quit');
+        writeSerial('\x03');
+        previousQuit = true;
+    }
+});
+
+// Node.js application will not terminate until the readline.Interface is closed
+// Called when close is called
+terminal.on('close', function () {
+    process.exit(0);
+});
+
+usbPort.on('open', function () {
+    // stty -echo hides echoed response.  stty echo shows response
+    writeSerial('stty -echo\r');
+    terminal.prompt();
+});
+
+usbPort.on('data', function (data) {
+    if (data.indexOf('{') == 0 && data.lastIndexOf('}') == data.length() - 1) {
+        // data is json
+        var obj = JSON.parse(data);
+        console.log(obj);
+    }
+    terminal.prompt();
+});
+
+usbPort.on('error', function (err) {
+    console.log('Error: ', err.message);
+});
+
+function writeSerial(data) {
+    usbPort.write(input, function (err) {
+        if (err) {
+            return console.log('Error on write: ', err.message);
+        }
+    });
+}
 
 function createBackgroundWindow(width, height) {
     drawable = new BrowserWindow({
