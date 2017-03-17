@@ -17,7 +17,7 @@ var previousQuit = false;
 var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
     {
         baudRate: 115200,
-        parser: SerialPort.parsers.raw
+        parser: SerialPort.parsers.readline(/(?:\r\n)|(.*: )$/)
     }
 );
 
@@ -65,10 +65,15 @@ usbPort.on('open', function () {
 });
 
 usbPort.on('data', function (data) {
-    if (data.indexOf('{') == 0 && data.lastIndexOf('}') == data.length() - 1) {
-        // data is json
-        var obj = JSON.parse(data);
-        console.log(obj);
+    if (data != undefined) {
+        if (data.indexOf('{') == 0 && data.lastIndexOf('}') == data.length() - 1) {
+            // data is json
+            var obj = JSON.parse(data);
+            console.log(obj);
+        }
+        if (data.length > 0) {
+            console.log(data);
+        }
     }
     terminal.prompt();
 });
