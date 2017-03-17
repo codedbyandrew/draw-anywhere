@@ -26,6 +26,7 @@
     "electron-rebuild": "^1.5.7"
   },
   "scripts": {
+    "prestart": "npm install",
     "start": "electron .",
     "install": "electron-rebuild",
     "pack": "electron-packager . 'Draw Anywhere' --overwrite"

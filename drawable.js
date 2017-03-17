@@ -117,10 +117,10 @@
             var canvas = document.getElementById(self.canvasOptions.customCanvasId);
             var image = canvas.toDataURL("image/png");
             clipboard.writeImage(nativeImage.createFromDataURL(image));
-            $("#drawable-region").removeClass("flash");
+            $("#drawable-region").addClass("flash");
             setTimeout(function () {
-                $("#drawable-region").addClass("flash");
-            }, 1);
+                $("#drawable-region").removeClass("flash");
+            }, 1000);
         };
 
     }]);

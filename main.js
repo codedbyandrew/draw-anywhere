@@ -13,11 +13,11 @@ let toolpanel = null;
 let drawable = null;
 var previousQuit = false;
 
-// https://github.com/EmergingTechnologyAdvisors/node-serialport#new_module_serialport--SerialPort_new
+// https://github.com/EmergingTechnologyAdvisors/node-serialport/blob/4.0.7/README.md#serialport-path-options-opencallback
 var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
     {
         baudRate: 115200,
-        parser: SerialPort.parsers.readline(/(?:\r\n)|(.*: )$/)
+        parser: SerialPort.parsers.readline(/(?:\n)|(.*: )$|(?:.*:~\$ )$/)
     }
 );
 
@@ -37,7 +37,8 @@ SerialPort.list(function (err, ports) {
 });
 
 terminal.on('line', function (input) {
-    writeSerial(input + '\r');
+    writeSerial(input + '\r\n');
+    terminal.prompt();
     previousQuit = false;
 });
 
@@ -72,7 +73,7 @@ usbPort.on('data', function (data) {
             console.log(obj);
         }
         if (data.length > 0) {
-            console.log(data);
+            process.stdout.write('\r' + data + '\n');
         }
     }
     terminal.prompt();

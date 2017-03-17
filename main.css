@@ -102,7 +102,6 @@ body.no-vibrancy {
 }
 
 #toolbar.verticalToolbar {
-    transform-origin: top right;
     transform: rotate(-90deg);
     box-shadow: -26px 0 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
