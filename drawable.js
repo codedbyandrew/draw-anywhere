@@ -14,9 +14,10 @@
         self.strokeAdjustTemplate = "strokeAdjustTemplate.html";
         self.configurationTemplate = "configurationTemplate.html";
 
+        var pixelRatio = window.devicePixelRatio;
         self.canvasOptions = {
-            width: $window.innerWidth, //px
-            height: $window.innerHeight - 36, //px
+            width: pixelRatio * $window.innerWidth, //px
+            height: pixelRatio * $window.innerHeight, //px
             backgroundColor: 'rgba(255,255,255,0)',
             color: 'rgba(255, 255, 0, 1)',
             lineWidth: 5, //px
@@ -30,6 +31,7 @@
         self.vibrancy = true;
         self.circularToolbar = false;
         self.verticalToolbar = false;
+        self.drawing = false;
 
         self.dragOptions = {
             start: function (e) {
@@ -92,20 +94,27 @@
         var w = angular.element($window);
         w.bind('resize', function () {
             // only update canvas if it has grown in one dimension
-            if ($window.innerWidth > self.canvasOptions.width || $window.innerHeight > (self.canvasOptions.height + 36)) {
+            if ($window.innerWidth > self.canvasOptions.width || $window.innerHeight > (self.canvasOptions.height)) {
                 document.getElementById(self.canvasOptions.customCanvasId).width = $window.innerWidth;
-                document.getElementById(self.canvasOptions.customCanvasId).height = $window.innerHeight - 36;
+                document.getElementById(self.canvasOptions.customCanvasId).height = $window.innerHeight;
                 document.getElementById(self.canvasOptions.customCanvasId + "Tmp").width = $window.innerWidth;
-                document.getElementById(self.canvasOptions.customCanvasId + "Tmp").height = $window.innerHeight - 36;
+                document.getElementById(self.canvasOptions.customCanvasId + "Tmp").height = $window.innerHeight;
             }
         });
 
         $document.ready(function () {
-            var ctx = document.getElementById(self.canvasOptions.customCanvasId + "Tmp").getContext("2d");
-            ctx.shadowColor = "rgba(0, 0, 0, .47)";
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 26;
-            ctx.shadowBlur = 43;
+            var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
+            var canvas = document.getElementById(self.canvasOptions.customCanvasId);
+            var contextTmp = canvasTmp.getContext("2d");
+            contextTmp.scale(2, 2);
+            contextTmp.shadowColor = "rgba(0, 0, 0, .47)";
+            contextTmp.shadowOffsetX = 0;
+            contextTmp.shadowOffsetY = 26 * pixelRatio;
+            contextTmp.shadowBlur = 43 * pixelRatio;
+            canvasTmp.style.width = canvasTmp.width * (1 / pixelRatio) + "px";
+            canvasTmp.style.height = canvasTmp.height * (1 / pixelRatio) + "px";
+            canvas.style.width = canvas.width * (1 / pixelRatio) + "px";
+            canvas.style.height = canvas.height * (1 / pixelRatio) + "px";
         });
 
         self.toggleVibrancy = function () {

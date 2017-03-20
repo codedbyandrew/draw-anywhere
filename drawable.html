@@ -26,14 +26,14 @@
         <label>Calibrate</label>
     </div>
 </script>
-<div id="title">
+<div id="title" ng-class="{'drawing': drawCtrl.drawing}">
     <span>Draw Anywhere</span>
 </div>
 <div id="toolbar"
      ng-draggable="drawCtrl.dragOptions"
      class="drawable"
      ng-hide="drawCtrl.circularToolbar"
-     ng-class="{'verticalToolbar':drawCtrl.verticalToolbar}">
+     ng-class="{'verticalToolbar':drawCtrl.verticalToolbar, 'drawing': drawCtrl.drawing}">
     <button uib-popover-template="drawCtrl.configurationTemplate"
             popover-placement="{{drawCtrl.verticalToolbar ? 'left': 'bottom-left'}}"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
@@ -103,7 +103,13 @@
 <div id="drawable-region">
 </div>
 <div id="cover" ng-show="drawCtrl.cover"></div>
-<div pw-canvas options="drawCtrl.canvasOptions" class="canvas" version="drawCtrl.version"></div>
+<div pw-canvas
+     options="drawCtrl.canvasOptions"
+     class="canvas"
+     version="drawCtrl.version"
+     ng-mousedown="drawCtrl.drawing = true"
+     ng-mouseup="drawCtrl.drawing = false">
+</div>
 <script type="text/javascript" src="./node_modules/angular/angular.min.js"></script>
 <script type="text/javascript" src="./node_modules/angular-animate/angular-animate.js"></script>
 <script type="text/javascript" src="./node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>

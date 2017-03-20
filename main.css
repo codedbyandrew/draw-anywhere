@@ -45,6 +45,12 @@ body.no-vibrancy {
     background: rgba(36, 36, 36, .86);
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
+    transition: top ease .5s;
+}
+
+#title.drawing {
+    z-index: 1;
+    top: -36px;
 }
 
 .no-vibrancy > #title {
@@ -81,6 +87,10 @@ body.no-vibrancy {
     z-index: 6;
     cursor: pointer;
     position: relative;
+}
+
+#toolbar.drawing {
+    z-index: 2;
 }
 
 .verticalToolbar i {
@@ -163,9 +173,8 @@ button span .on {
 
 #drawable-region {
     background: rgba(0, 0, 0, 0);
-    /*border: 1px solid rgba(36, 36, 36, .97);*/
     position: absolute;
-    top: 36px;
+    top: 0;
     bottom: 0;
     width: 100%;
     cursor: crosshair;
@@ -226,7 +235,7 @@ button span .on {
 .canvas {
     background: transparent;
     position: absolute;
-    top: 36px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
@@ -237,7 +246,7 @@ button span .on {
 #cover {
     background: transparent;
     position: absolute;
-    top: 36px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
