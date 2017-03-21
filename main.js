@@ -12,6 +12,11 @@ const readline = require('readline');
 let toolpanel = null;
 let drawable = null;
 var previousQuit = false;
+var currentVibrancy = 'ultra-dark';
+var self = this;
+
+self.ports = [];
+self.currentPort = '';
 
 // https://github.com/EmergingTechnologyAdvisors/node-serialport/blob/4.0.7/README.md#serialport-path-options-opencallback
 var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
@@ -29,12 +34,13 @@ const terminal = readline.createInterface({
     prompt: 'DE1> '
 });
 
-// Get info about available ports, currently only used in debugging
-SerialPort.list(function (err, ports) {
-    ports.forEach(function (port) {
-        console.log(port.comName + ", " + port.manufacturer + ", " + port.serialNumber);
+// Get info about available ports
+function getPorts() {
+    SerialPort.list(function (err, ports) {
+        self.ports = ports;
     });
-});
+}
+getPorts();
 
 terminal.on('line', function (input) {
     writeSerial(input + '\r\n');
@@ -100,10 +106,10 @@ function createBackgroundWindow(width, height) {
         show: false,
         frame: true,
         resizable: true,
-        fullscreenable: false,
-        hasShadow: false,
+        fullscreenable: true,
+        hasShadow: false,  // buggy, on window resize ghost shadows appear
         useContentSize: true,
-        vibrancy: 'ultra-dark'
+        vibrancy: currentVibrancy
     });
 
     // and load the index.html of the app.
@@ -165,7 +171,7 @@ function createToolWindow(x, y, width) {
         alwaysOnTop: true,
         //backgroundColor: '#242424',
         acceptFirstMouse: true,
-        vibrancy: 'ultra-dark',
+        vibrancy: currentVibrancy,
         transparent: true
     });
 
@@ -221,11 +227,20 @@ app.on('ready', function () {
 
     ipc.on('toggleVibrancy', function (event, arg) {
         if (arg) {
-            drawable.setVibrancy('ultra-dark');
+            currentVibrancy = 'ultra-dark';
         } else {
-            drawable.setVibrancy('');
+            currentVibrancy = '';
         }
+        drawable.setVibrancy(currentVibrancy);
     });
+
+    ipc.on('drawableOpened', function (event, arg) {
+        var config = {};
+        config.vibrancy = currentVibrancy;
+        config.ports = self.ports;
+        config.currentPort = self.currentPort;
+        event.sender.send('windowConfig', config);
+    })
 });
 
 // Quit when all windows are closed.
@@ -235,6 +250,11 @@ app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+});
+
+app.on('will-quit', function () {
+    usbPort.close();
+    terminal.close();
 });
 
 app.on('activate', function () {

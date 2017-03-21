@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Drawable Area</title>
-    <link href="main.css" rel="stylesheet">
     <link href="./node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href="./node_modules/angular-bootstrap-colorpicker/css/colorpicker.min.css" rel="stylesheet">
     <link href="./node_modules/angular-hotkeys/build/hotkeys.min.css" rel="stylesheet">
+    <link href="./node_modules/angular-ui-switch/angular-ui-switch.min.css" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
 </head>
 <body ng-controller="DrawableCtrl as drawCtrl" ng-class="drawCtrl.vibrancy ? 'vibrancy' : 'no-vibrancy'">
 <script type="text/ng-template" id="strokeAdjustTemplate.html">
@@ -22,9 +23,17 @@
     </div>
 </script>
 <script type="text/ng-template" id="configurationTemplate.html">
-    <div class="form-group">
-        <label>Calibrate</label>
-    </div>
+    <form>
+        <label>Grid</label>
+        <div class="right-switche">
+            <switch id="enabled" name="enabled" ng-model="drawCtrl.gridVisible" class="green" size="small"></switch>
+        </div>
+        <div class="divider"></div>
+        <label>Line Shadow</label>
+        <div class="right-switche">
+            <switch id="enabled" name="enabled" ng-model="drawCtrl.lineShadow" class="green" size="small"></switch>
+        </div>
+    </form>
 </script>
 <div id="title" ng-class="{'drawing': drawCtrl.drawing}">
     <span>Draw Anywhere</span>
@@ -39,9 +48,23 @@
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="fa fa-cog" aria-hidden="true" ng-class=""></i>
     </button>
-    <button>
-        <i class="fa fa-chain-broken" aria-hidden="true"></i>
-    </button>
+    <div uib-dropdown keyboard-nav appendToOpenClass="open">
+        <button id="btn-append-to-body" type="button" uib-dropdown-toggle>
+            <i class="fa" ng-class="drawCtrl.currentPort ? 'fa-chain' : 'fa-chain-broken'" aria-hidden="true"></i>
+        </button>
+        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body">
+            <li role="menuitem"
+                ng-repeat="port in drawCtrl.ports"
+                ng-class="{'selected': drawCtrl.currentPort==port.comName}"
+                ng-click="drawCtrl.setPort(port.comName)">
+                <a href="#">{{port.comName}}
+                    <span ng-show="drawCtrl.currentPort==port.comName"> &#10004;</span>
+                </a>
+            </li>
+            <li class="divider"></li>
+            <li role="menuitem"><a href="#">Refresh</a></li>
+        </ul>
+    </div>
     <button>
         <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
     </button>
@@ -100,7 +123,7 @@
         <i class="fa fa-clipboard" aria-hidden="true"></i>
     </button>
 </div>
-<div id="drawable-region">
+<div id="drawable-region" ng-class="{'grid': drawCtrl.gridVisible}">
 </div>
 <div id="cover" ng-show="drawCtrl.cover"></div>
 <div pw-canvas
@@ -113,6 +136,7 @@
 <script type="text/javascript" src="./node_modules/angular/angular.min.js"></script>
 <script type="text/javascript" src="./node_modules/angular-animate/angular-animate.js"></script>
 <script type="text/javascript" src="./node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+<script type="text/javascript" src="./node_modules/angular-ui-switch/angular-ui-switch.min.js"></script>
 <script type="text/javascript" src="./node_modules/angular-canvas-painter/dist/angular-canvas-painter.min.js"></script>
 <script type="text/javascript"
         src="./node_modules/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"></script>
