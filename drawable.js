@@ -35,6 +35,7 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
     self.drawing = false;
     self.gridVisible = true;
     self.lineShadow = true;
+    self.theme = "ultra-dark";
 
     ipc.send('drawableOpened');
 
@@ -145,6 +146,10 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
         ipc.send('toggleVibrancy', self.vibrancy);
     };
 
+    self.updateTheme = function () {
+        ipc.send('updateTheme', self.theme);
+    };
+
     self.copyToClipboard = function () {
         var canvas = document.getElementById(self.canvasOptions.customCanvasId);
         var newCanvas = cloneCanvas(canvas);
@@ -160,7 +165,7 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
     self.setPort = function (portName) {
         self.currentPort = portName;
         ipc.send('setPort', portName);
-    }
+    };
 
 }]);
 

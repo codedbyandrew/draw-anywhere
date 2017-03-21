@@ -13,6 +13,7 @@ let toolpanel = null;
 let drawable = null;
 var previousQuit = false;
 var currentVibrancy = 'ultra-dark';
+var currentlyTransparent = false;
 var self = this;
 
 self.ports = [];
@@ -226,12 +227,20 @@ app.on('ready', function () {
     });
 
     ipc.on('toggleVibrancy', function (event, arg) {
-        if (arg) {
-            currentVibrancy = 'ultra-dark';
+        currentlyTransparent = arg;
+        if (!arg) {
+            drawable.setVibrancy(currentVibrancy);
         } else {
-            currentVibrancy = '';
+            drawable.setVibrancy('');
         }
-        drawable.setVibrancy(currentVibrancy);
+
+    });
+
+    ipc.on('updateTheme', function (event, arg) {
+        currentVibrancy = arg;
+        if (!currentlyTransparent) {
+            drawable.setVibrancy(arg);
+        }
     });
 
     ipc.on('drawableOpened', function (event, arg) {

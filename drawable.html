@@ -25,13 +25,25 @@
 <script type="text/ng-template" id="configurationTemplate.html">
     <form>
         <label>Grid</label>
-        <div class="right-switche">
+        <div class="right-config">
             <switch id="enabled" name="enabled" ng-model="drawCtrl.gridVisible" class="green" size="small"></switch>
         </div>
         <div class="divider"></div>
         <label>Line Shadow</label>
-        <div class="right-switche">
+        <div class="right-config">
             <switch id="enabled" name="enabled" ng-model="drawCtrl.lineShadow" class="green" size="small"></switch>
+        </div>
+        <div class="divider"></div>
+        <label>Theme</label>
+        <div class="right-config">
+            <select ng-model="drawCtrl.theme" ng-change="drawCtrl.updateTheme()">
+                <option value="ultra-dark">Ultra Dark</option>
+                <option value="dark">Dark</option>
+                <option value="selection">Clear Light</option>
+                <option value="titlebar">Light</option>
+                <option value="medium-light">Medium Light</option>
+                <option value="light">Ultra Light</option>
+            </select>
         </div>
     </form>
 </script>
