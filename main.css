@@ -18,10 +18,18 @@ html, body {
     border-radius: 4px;
 }
 
-body.no-vibrancy {
-    /*box-shadow: inset 0 0 5px rgba(0,0,0,.5);*/
-    transition: background ease-out 0.25s;
-    background: rgba(34, 34, 34, 0) !important;
+body.transparent {
+    background: transparent !important;
+}
+
+.dark > #title, .dark > #toolbar {
+    color: #fff;
+    background: rgba(34, 34, 34, 1);
+}
+
+.light > #title, .light > #toolbar {
+    color: #000;
+    background: rgba(216, 216, 216, 1);
 }
 
 #title {
@@ -30,30 +38,25 @@ body.no-vibrancy {
     top: 0;
     height: 36px;
     -webkit-app-region: drag;
-    /*text-shadow: 0px 1px 2px rgba(0, 0, 0, .8);*/
-    color: #fff;
     font-size: 11pt;
     font-weight: 400;
     overflow: hidden;
     text-align: center;
-    z-index: 5;
+    z-index: 2;
     user-select: none;
     -webkit-user-select: none;
-    /*border-bottom: 1px solid rgba(255, 255, 255, .05);*/
-    background: rgba(34, 34, 34, 1);
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    transition: top ease .5s;
+    transition: box-shadow ease .5s;
+    box-shadow: 0 0 3px rgba(0, 0, 0, .44);
+}
+
+.transparent #title {
+    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
 
 #title.drawing {
-    z-index: 1;
-    top: -36px;
-}
-
-.no-vibrancy > #title {
-    /*box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);*/
-    border: none;
+    z-index: 0;
 }
 
 #title span {
@@ -61,18 +64,9 @@ body.no-vibrancy {
     line-height: 36px;
     user-select: none;
     -webkit-user-select: none;
-    color: rgba(255, 255, 255, 1);
-}
-
-#title-bar span {
-    display: inline-block;
-    line-height: 22px;
-    user-select: none;
-    -webkit-user-select: none;
 }
 
 #toolbar {
-    background: rgba(34, 34, 34, 1);
     height: 36px;
     width: 480px;
     border-radius: 4px;
@@ -88,7 +82,7 @@ body.no-vibrancy {
 }
 
 #toolbar.drawing {
-    z-index: 2;
+    z-index: 1;
 }
 
 .verticalToolbar i {
@@ -103,10 +97,14 @@ body.no-vibrancy {
     -webkit-app-region: no-drag;
     padding: 0 10px 0 0;
     left: calc(50% - 215px);
-    top: 36px;
-    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44); /*, inset 0px 1px 1px rgba(255,255,255,.1);*/
+    top: 56px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, .44); /*, inset 0px 1px 1px rgba(255,255,255,.1);*/
     transition: transform ease .5s, box-shadow ease .5s;
     transform-origin: top right;
+}
+
+.transparent > #toolbar {
+    box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
 
 #toolbar.verticalToolbar {
@@ -135,30 +133,8 @@ button:disabled {
     opacity: .5;
 }
 
-button span .on {
-
-}
-
-#circular-toolbar button {
-    position: absolute;
-    padding: 0;
-    outline: none;
-    background: none;
-    font-size: 18px;
-    line-height: 30px;
-    width: 30px;
-    height: 30px;
-    border-radius: 15px;
-    border: none;
-}
-
 #toolbar button i, #circular-toolbar button i {
-    color: rgba(255, 255, 255, 1);
     width: 36px;
-}
-
-#toolbar button i:hover, #circular-toolbar button i:hover {
-    color: rgba(255, 255, 255, 1);
 }
 
 #toolbar button:active {
@@ -185,7 +161,7 @@ button span .on {
 }
 
 #drawable-region {
-    background: rgba(0, 0, 0, 0);
+    background: transparent;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -197,6 +173,25 @@ button span .on {
     background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
     height: 100%;
     background-size: 50px 50px;
+    z-index: -1;
+    background-position: -12px 24px;
+}
+
+.light > #drawable-region.grid {
+    filter: invert();
+}
+
+#circular-toolbar button {
+    position: absolute;
+    padding: 0;
+    outline: none;
+    background: none;
+    font-size: 18px;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    border: none;
 }
 
 #circular-toolbar {
@@ -258,7 +253,7 @@ button span .on {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 2;
+    z-index: 1;
     cursor: crosshair;
 }
 
@@ -269,19 +264,10 @@ button span .on {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 3;
+    z-index: 2;
 }
 
-.center-parent {
-    position: relative;
-    float: right;
-    height: 20px;
-    width: 20px;
-    border: 1px solid black;
-    border-radius: 1000px;
-}
-
-#preview-width {
+#stroke-preview-width {
     background-color: black;
     border-radius: 1000px;
     min-width: 1px;
@@ -347,11 +333,20 @@ button span .on {
     left: 13px;
 }
 
-.divider {
+.hr-divider {
     min-width: 165px;
 }
 
 .right-config {
     display: inline;
     float: right;
+}
+
+.center-parent {
+    position: relative;
+    float: right;
+    height: 20px;
+    width: 20px;
+    border: 1px solid black;
+    border-radius: 1000px;
 }

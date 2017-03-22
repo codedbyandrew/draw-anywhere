@@ -12,7 +12,7 @@ const readline = require('readline');
 let toolpanel = null;
 let drawable = null;
 var previousQuit = false;
-var currentVibrancy = 'ultra-dark';
+var theme = 'ultra-dark';
 var currentlyTransparent = false;
 var self = this;
 
@@ -110,7 +110,7 @@ function createBackgroundWindow(width, height) {
         fullscreenable: true,
         hasShadow: false,  // buggy, on window resize ghost shadows appear
         useContentSize: true,
-        vibrancy: currentVibrancy
+        vibrancy: theme
     });
 
     // and load the index.html of the app.
@@ -172,7 +172,7 @@ function createToolWindow(x, y, width) {
         alwaysOnTop: true,
         //backgroundColor: '#242424',
         acceptFirstMouse: true,
-        vibrancy: currentVibrancy,
+        vibrancy: theme,
         transparent: true
     });
 
@@ -229,7 +229,7 @@ app.on('ready', function () {
     ipc.on('toggleVibrancy', function (event, arg) {
         currentlyTransparent = arg;
         if (!arg) {
-            drawable.setVibrancy(currentVibrancy);
+            drawable.setVibrancy(theme);
         } else {
             drawable.setVibrancy('');
         }
@@ -237,7 +237,7 @@ app.on('ready', function () {
     });
 
     ipc.on('updateTheme', function (event, arg) {
-        currentVibrancy = arg;
+        theme = arg;
         if (!currentlyTransparent) {
             drawable.setVibrancy(arg);
         }
@@ -245,7 +245,8 @@ app.on('ready', function () {
 
     ipc.on('drawableOpened', function (event, arg) {
         var config = {};
-        config.vibrancy = currentVibrancy;
+        config.currentlyTransparent = currentlyTransparent;
+        config.theme = theme;
         config.ports = self.ports;
         config.currentPort = self.currentPort;
         event.sender.send('windowConfig', config);

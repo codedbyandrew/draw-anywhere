@@ -27,7 +27,7 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
     self.version = 0;
 
     self.cover = false;
-    self.vibrancy = true;
+    self.currentlyTransparent = false;
     self.circularToolbar = false;
     self.verticalToolbar = false;
     self.currentPort = '';
@@ -41,7 +41,8 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
 
     ipc.on('windowConfig', function (event, config) {
         event.returnValue = '';
-        self.vibrancy = config.vibrancy;
+        self.currentlyTransparent = config.currentlyTransparent;
+        self.theme = config.theme;
         self.ports = config.ports;
         self.currentPort = config.currentPort;
         $scope.$apply();
@@ -142,8 +143,8 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
     });
 
     self.toggleVibrancy = function () {
-        self.vibrancy = !self.vibrancy;
-        ipc.send('toggleVibrancy', self.vibrancy);
+        self.currentlyTransparent = !self.currentlyTransparent;
+        ipc.send('toggleVibrancy', self.currentlyTransparent);
     };
 
     self.updateTheme = function () {

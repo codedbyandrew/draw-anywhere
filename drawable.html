@@ -11,12 +11,14 @@
     <link href="./node_modules/angular-ui-switch/angular-ui-switch.min.css" rel="stylesheet">
     <link href="main.css" rel="stylesheet">
 </head>
-<body ng-controller="DrawableCtrl as drawCtrl" ng-class="drawCtrl.vibrancy ? 'vibrancy' : 'no-vibrancy'">
+<body ng-controller="DrawableCtrl as drawCtrl"
+      ng-class="[drawCtrl.currentlyTransparent ? 'transparent' : 'vibrant',
+                (drawCtrl.theme == 'dark' || drawCtrl.theme == 'ultra-dark') ? 'dark' : 'light']">
 <script type="text/ng-template" id="strokeAdjustTemplate.html">
     <div class="form-group">
         <label>Width</label>
         <div class="center-parent">
-            <div id="preview-width"
+            <div id="stroke-preview-width"
                  ng-style="{width: drawCtrl.canvasOptions.lineWidth+'px', height: drawCtrl.canvasOptions.lineWidth+'px'}"></div>
         </div>
         <input type="range" min=".5" max="20" ng-model="drawCtrl.canvasOptions.lineWidth">
@@ -28,12 +30,12 @@
         <div class="right-config">
             <switch id="enabled" name="enabled" ng-model="drawCtrl.gridVisible" class="green" size="small"></switch>
         </div>
-        <div class="divider"></div>
+        <div class="hr-divider"></div>
         <label>Line Shadow</label>
         <div class="right-config">
             <switch id="enabled" name="enabled" ng-model="drawCtrl.lineShadow" class="green" size="small"></switch>
         </div>
-        <div class="divider"></div>
+        <div class="hr-divider"></div>
         <label>Theme</label>
         <div class="right-config">
             <select ng-model="drawCtrl.theme" ng-change="drawCtrl.updateTheme()">
@@ -92,11 +94,11 @@
     <button ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
         <i class="fa fa-undo" aria-hidden="true"></i>
     </button>
-    <button>
+    <button ng-disabled="drawCtrl.version == 0">
         <i class="fa fa-trash" aria-hidden="true" ng-click="drawCtrl.version = 0"></i>
     </button>
     <button ng-click="drawCtrl.toggleVibrancy()">
-        <i class="fa" ng-class="drawCtrl.vibrancy ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
+        <i class="fa" ng-class="drawCtrl.currentlyTransparent ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
     </button>
     <button ng-click="drawCtrl.copyToClipboard()">
         <i class="fa fa-clipboard" aria-hidden="true"></i>
@@ -119,7 +121,7 @@
         <i class="fa fa-eyedropper" aria-hidden="true" ng-style="{color: drawCtrl.canvasOptions.color}"></i>
     </button>
     <button ng-click="drawCtrl.toggleVibrancy()" class="eye">
-        <i class="fa" ng-class="drawCtrl.vibrancy ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
+        <i class="fa" ng-class="drawCtrl.currentlyTransparent ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
     </button>
     <button class="undo" ng-disabled="drawCtrl.version == 0" ng-click="drawCtrl.version = drawCtrl.version - 1">
         <i class="fa fa-undo" aria-hidden="true"></i>
@@ -135,8 +137,7 @@
         <i class="fa fa-clipboard" aria-hidden="true"></i>
     </button>
 </div>
-<div id="drawable-region" ng-class="{'grid': drawCtrl.gridVisible}">
-</div>
+<div id="drawable-region" ng-class="{'grid': drawCtrl.gridVisible}"></div>
 <div id="cover" ng-show="drawCtrl.cover"></div>
 <div pw-canvas
      options="drawCtrl.canvasOptions"
