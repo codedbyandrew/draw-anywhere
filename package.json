@@ -15,11 +15,15 @@
     "angular-hotkeys": "^1.7.0",
     "angular-ui-bootstrap": "^2.5.0",
     "angular-ui-switch": "^0.1.1",
+    "angularjs-color-picker": "^3.2.1",
+    "bootstrap": "^3.3.7",
     "font-awesome": "^4.7.0",
     "jquery": "^3.1.1",
-    "md-color-picker": "^0.2.6",
+    "mdi": "^1.8.36",
+    "ocrad.js": "0.0.1",
     "robotjs": "^0.4.5",
     "serialport": "^4.0.7",
+    "tinycolor2": "^1.4.1",
     "trim-canvas": "^0.1.1"
   },
   "devDependencies": {

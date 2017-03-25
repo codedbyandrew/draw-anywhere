@@ -1,4 +1,4 @@
-##Install Guide:
+## Install Guide:
 
 Install Node.js LTS (https://nodejs.org/en/download/).
 Tested functional with Node version 6.9.4 on macOS.

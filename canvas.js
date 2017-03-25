@@ -1,53 +1,63 @@
 const electron = require('electron');
+const shell = electron.shell;
 const ipc = electron.ipcRenderer;
 const clipboard = electron.clipboard;
 const nativeImage = electron.nativeImage;
+const {dialog} = electron.remote;
+const jQuery = require("jquery");
+var $ = jQuery;
+var angular = require('angular');
+const fs = require('fs');
+require('angular-animate');
+require('angular-ui-bootstrap');
+require('angular-ui-switch');
+require('angular-canvas-painter');
+require('angular-hotkeys');
+const bootstrap = require('bootstrap');
+require('tinycolor2');
+require('angularjs-color-picker');
 const trimCanvas = require('trim-canvas');
-var $ = require("jquery");
+var Ocrad = require('ocrad.js');
 
-var app = angular.module('drawable', ['ui.bootstrap', 'uiSwitch', 'ngAnimate', 'pw.canvas-painter', 'colorpicker.module', 'cfp.hotkeys']);
+var app = angular.module('canvas', ['ui.bootstrap', 'uiSwitch', 'ngAnimate', 'pw.canvas-painter', 'color.picker', 'cfp.hotkeys']);
 
-app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', function ($scope, $window, hotkeys, $document) {
+app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', function ($scope, $window, hotkeys, $document) {
     var self = this;
 
     self.strokeAdjustTemplate = "strokeAdjustTemplate.html";
     self.configurationTemplate = "configurationTemplate.html";
+    self.OCRTemplate = "OCRTemplate.html";
 
     var pixelRatio = window.devicePixelRatio;
     self.canvasOptions = {
         width: pixelRatio * $window.innerWidth, //px
         height: pixelRatio * $window.innerHeight, //px
         backgroundColor: 'rgba(255,255,255,0)',
-        color: 'rgba(255, 255, 0, 1)',
-        lineWidth: 5, //px
+        color: 'rgba(0, 0, 0, 1)',
+        lineWidth: 10, //px
         opacity: 1, //0-1
         undo: true, // boolean or a number of versions to keep in memory
         customCanvasId: 'myCanvas' // define a custom value for the id attribute of the canvas element (default: 'pwCanvasMain')
     };
     self.version = 0;
 
-    self.cover = false;
-    self.currentlyTransparent = false;
-    self.circularToolbar = false;
-    self.verticalToolbar = false;
-    self.currentPort = '';
-    self.ports = [];
-    self.drawing = false;
-    self.gridVisible = true;
-    self.lineShadow = true;
-    self.theme = "ultra-dark";
-
-    ipc.send('drawableOpened');
-
-    ipc.on('windowConfig', function (event, config) {
-        event.returnValue = '';
-        self.currentlyTransparent = config.currentlyTransparent;
-        self.theme = config.theme;
-        self.ports = config.ports;
-        self.currentPort = config.currentPort;
-        $scope.$apply();
-        console.log(config);
-    });
+    self.colorPickerConfig = {
+        required: true,
+        disabled: false,
+        // validation
+        restrictToFormat: true,
+        allowEmpty: false,
+        // color
+        format: 'rgb',
+        hue: true,
+        saturation: false,
+        lightness: false, // Note: In the square mode this is HSV and in round mode this is HSL
+        alpha: true,
+        swatch: false,
+        swatchOnly: true,
+        // popup
+        inline: true
+    };
 
     self.dragOptions = {
         start: function (e) {
@@ -62,12 +72,70 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
             self.cover = false;
             $scope.$apply();
         },
-        container: 'drawable-region'
+        container: 'drag-region',
+        element: document.getElementById('toolbar')
     };
+
+    self.cover = false;
+    self.currentlyTransparent = false;
+    self.verticalToolbar = false;
+    self.currentPort = '';
+    self.ports = [];
+    self.drawing = false;
+    self.gridVisible = true;
+    self.lineShadow = true;
+    self.theme = "selection";
+
+    self.OCR = false;
+    self.recognizedText = '';
+
+    ipc.send('drawableOpened');
+
+    ipc.on('windowConfig', function (event, config) {
+        event.returnValue = '';
+        self.currentlyTransparent = config.currentlyTransparent;
+        self.theme = config.theme;
+        self.ports = config.ports;
+        self.currentPort = config.currentPort;
+        $scope.$apply();
+    });
+
+    $scope.$watch(function () {
+        return self.lineShadow;
+    }, function () {
+        self.toggleLineShadow(self.lineShadow);
+    });
+
+    $scope.$watch(function () {
+        return self.version;
+    }, function () {
+        if (self.OCR) {
+            if (self.version == 0) {
+                self.recognizedText = "";
+                return;
+            }
+            setTimeout(function () {
+                var canvas = document.getElementById(self.canvasOptions.customCanvasId);
+                var newCanvas = cloneCanvas(canvas);
+                newCanvas = trimCanvas.default(newCanvas);
+                var context = newCanvas.getContext('2d');
+                var w = canvas.width;
+                var h = canvas.height;
+                var compositeOperation = context.globalCompositeOperation;
+                context.globalCompositeOperation = "destination-over";
+                context.fillStyle = 'rgb(255,255,255)';
+                context.fillRect(0, 0, w, h);
+                context.globalCompositeOperation = compositeOperation;
+                self.recognizedText = Ocrad(newCanvas);
+                $scope.$apply();
+
+            }, 100);
+        }
+    });
 
     hotkeys.add({
         combo: 'command+z',
-        description: 'Undo draw strokes',
+        description: 'Undo last stroke',
         callback: function () {
             if (self.version > 0) {
                 self.version--;
@@ -78,6 +146,7 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
     hotkeys.add({
         combo: 'command+c',
         description: 'Copy canvas to clipboard',
+        action: 'keydown',
         callback: function () {
             self.copyToClipboard();
         }
@@ -88,6 +157,16 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
         description: 'New canvas',
         callback: function () {
             self.version = 0;
+        }
+    });
+
+    hotkeys.add({
+        combo: 'command+s',
+        description: 'Save canvas',
+        action: 'keydown',
+        callback: function (e) {
+            e.preventDefault();
+            self.saveCanvas();
         }
     });
 
@@ -109,9 +188,15 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
 
     hotkeys.add({
         combo: 'alt',
-        description: 'Open circular toolbar',
+        description: 'Quick toggle',
         callback: function () {
-            self.circularToolbar = !self.circularToolbar;
+        }
+    });
+
+    hotkeys.add({
+        combo: 'command+r',
+        description: 'Reload',
+        callback: function () {
         }
     });
 
@@ -131,16 +216,26 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
         var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
         var canvas = document.getElementById(self.canvasOptions.customCanvasId);
         var contextTmp = canvasTmp.getContext("2d");
-        contextTmp.scale(2, 2);
-        contextTmp.shadowColor = "rgba(0, 0, 0, .47)";
-        contextTmp.shadowOffsetX = 0;
-        contextTmp.shadowOffsetY = 26 * pixelRatio;
-        contextTmp.shadowBlur = 43 * pixelRatio;
+        contextTmp.scale(pixelRatio, pixelRatio);
         canvasTmp.style.width = canvasTmp.width * (1 / pixelRatio) + "px";
         canvasTmp.style.height = canvasTmp.height * (1 / pixelRatio) + "px";
         canvas.style.width = canvas.width * (1 / pixelRatio) + "px";
         canvas.style.height = canvas.height * (1 / pixelRatio) + "px";
+        self.toggleLineShadow(true);
     });
+
+    self.toggleLineShadow = function (enabled) {
+        var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
+        var contextTmp = canvasTmp.getContext("2d");
+        if (enabled) {
+            contextTmp.shadowColor = "rgba(0, 0, 0, .47)";
+            contextTmp.shadowOffsetX = 0;
+            contextTmp.shadowOffsetY = 26 * pixelRatio;
+            contextTmp.shadowBlur = 43 * pixelRatio;
+        } else {
+            contextTmp.shadowColor = "rgba(0, 0, 0, 0)";
+        }
+    };
 
     self.toggleVibrancy = function () {
         self.currentlyTransparent = !self.currentlyTransparent;
@@ -152,20 +247,56 @@ app.controller('DrawableCtrl', ['$scope', '$window', 'hotkeys', '$document', fun
     };
 
     self.copyToClipboard = function () {
+        if (self.version == 0) {
+            return;
+        }
+        $('#drag-region').addClass('flash');
+        setTimeout(function () {
+            $("#drag-region").removeClass("flash");
+        }, 1000);
+
         var canvas = document.getElementById(self.canvasOptions.customCanvasId);
         var newCanvas = cloneCanvas(canvas);
         newCanvas = trimCanvas.default(newCanvas);
         var image = newCanvas.toDataURL("image/png");
         clipboard.writeImage(nativeImage.createFromDataURL(image));
-        $("#drawable-region").addClass("flash");
-        setTimeout(function () {
-            $("#drawable-region").removeClass("flash");
-        }, 1000);
+    };
+
+    self.saveCanvas = function () {
+        if (self.version == 0) {
+            return;
+        }
+        dialog.showSaveDialog(
+            {
+                title: 'Save canvas',
+                filters: [{name: 'Image', extensions: ['png']}]
+            }
+            , function (fileName) {
+                if (fileName === undefined) return;
+                var canvas = document.getElementById(self.canvasOptions.customCanvasId);
+                var newCanvas = cloneCanvas(canvas);
+                newCanvas = trimCanvas.default(newCanvas);
+                var image = newCanvas.toDataURL("image/png");
+                console.log(fileName);
+                fs.writeFile(fileName, nativeImage.createFromDataURL(image).toPNG(), function (err) {
+                });
+            });
     };
 
     self.setPort = function (portName) {
+        if (!portName) {
+            portName = self.currentPort;
+        }
         self.currentPort = portName;
         ipc.send('setPort', portName);
+    };
+
+    self.displayHelp = function () {
+        hotkeys.toggleCheatSheet();
+    };
+
+    self.openInBrowser = function (url) {
+        shell.openExternal(url);
     };
 
 }]);
@@ -178,27 +309,27 @@ app.directive('ngDraggable', function ($document) {
         },
         link: function (scope, elem, attr) {
             var startX, startY, x = 0, y = 0,
-                start, stop, drag, container, enabled;
-
-            var width = elem[0].offsetWidth,
-                height = elem[0].offsetHeight;
+                start, stop, drag, container, element;
 
             // Obtain drag options
             if (scope.dragOptions) {
                 start = scope.dragOptions.start;
                 drag = scope.dragOptions.drag;
                 stop = scope.dragOptions.stop;
+                element = scope.dragOptions.element;
                 var id = scope.dragOptions.container;
                 if (id) {
                     container = document.getElementById(id).getBoundingClientRect();
                 }
             }
+            var width = element.offsetWidth,
+                height = element.offsetHeight;
 
             // Bind mousedown event
             elem.on('mousedown', function (e) {
                 e.preventDefault();
-                startX = e.clientX - elem[0].offsetLeft;
-                startY = e.clientY - elem[0].offsetTop;
+                startX = e.clientX - element.offsetLeft;
+                startY = e.clientY - element.offsetTop;
                 if (start) start(e);
                 $document.on('mousemove', mousemove);
                 $document.on('mouseup', mouseup);
@@ -221,7 +352,7 @@ app.directive('ngDraggable', function ($document) {
 
             // Move element, within container if provided
             function setPosition() {
-                if (container && !elem[0].classList.contains('verticalToolbar')) {
+                if (container && !element.classList.contains('verticalToolbar')) {
                     if (x < container.left) {
                         x = container.left;
                     } else if (x > container.right - width) {
@@ -234,10 +365,8 @@ app.directive('ngDraggable', function ($document) {
                     }
                 }
 
-                elem.css({
-                    top: y + 'px',
-                    left: x + 'px'
-                });
+                element.style.top = y + 'px';
+                element.style.left = x + 'px';
             }
         }
     }

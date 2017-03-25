@@ -9,10 +9,9 @@ const readline = require('readline');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let toolpanel = null;
-let drawable = null;
+let canvas = null;
 var previousQuit = false;
-var theme = 'ultra-dark';
+var theme = 'selection';
 var currentlyTransparent = false;
 var self = this;
 
@@ -98,8 +97,8 @@ function writeSerial(data) {
     });
 }
 
-function createBackgroundWindow(width, height) {
-    drawable = new BrowserWindow({
+function createCanvasWindow(width, height) {
+    canvas = new BrowserWindow({
         width: width,
         height: height,
         transparent: true,
@@ -114,103 +113,34 @@ function createBackgroundWindow(width, height) {
     });
 
     // and load the index.html of the app.
-    drawable.loadURL(url.format({
-        pathname: path.join(__dirname, 'drawable.html'),
+    canvas.loadURL(url.format({
+        pathname: path.join(__dirname, 'canvas.html'),
         protocol: 'file:',
         slashes: true
     }));
 
-    drawable.once('ready-to-show', function () {
-        drawable.show();
+    canvas.once('ready-to-show', function () {
+        canvas.show();
     });
 
-
     // Open the DevTools.
-    // drawable.webContents.openDevTools();
+    // canvas.webContents.openDevTools();
 
     // Emitted when the window is closed.
-    drawable.on('closed', function () {
+    canvas.on('closed', function () {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        drawable = null;
-        if (toolpanel !== null) {
-            toolpanel.close();
-        }
+        canvas = null;
     });
 
-    drawable.on('blur', function () {
-        /*drawable.hide();
-         if (toolpanel === null) {
-         launchWindows(toolpanel === null, false);
-         } else {
-         toolpanel.show();
-         // TODO: update location to match in-window toolpanel
-         }*/
-    });
-
-    drawable.on('focus', function () {
-        if (toolpanel !== null) {
-            toolpanel.hide();
-        }
-    })
 
 }
 
-function createToolWindow(x, y, width) {
-    // Create the browser window.
-    toolpanel = new BrowserWindow({
-        width: 219,
-        height: 37,
-        titleBarStyle: 'hidden-inset',
-        useContentSize: true,
-        show: false,
-        frame: true,
-        toolbar: true,
-        resizable: false,
-        fullscreenable: false,
-        alwaysOnTop: true,
-        //backgroundColor: '#242424',
-        acceptFirstMouse: true,
-        vibrancy: theme,
-        transparent: true
-    });
-
-    // and load the index.html of the app.
-    toolpanel.loadURL(url.format({
-        pathname: path.join(__dirname, 'index.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
-
-    toolpanel.setPosition(Math.round(width / 2 - 219 / 2 + x), y + 20);
-
-    // Open the DevTools.
-    // toolpanel.webContents.openDevTools();
-
-    toolpanel.once('ready-to-show', function () {
-        toolpanel.show();
-    });
-
-    // Emitted when the window is closed.
-    toolpanel.on('closed', function () {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        toolpanel = null;
-        if (drawable !== null) {
-            drawable.focus();
-        }
-    });
-}
-
-function launchWindows(openToolbar, openDraggable) {
+function launchWindow(openCanvas) {
     const {x, y, width, height} = electron.screen.getPrimaryDisplay().workArea;
-    if (openDraggable) {
-        createBackgroundWindow(width, height);
-    }
-    if (openToolbar) {
-        createToolWindow(x, y, width);
+    if (openCanvas) {
+        createCanvasWindow(width, height);
     }
 }
 
@@ -218,20 +148,14 @@ function launchWindows(openToolbar, openDraggable) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function () {
-    launchWindows(false, true);
-
-    ipc.on("toolbarDraw", function (event, arg) {
-        event.returnValue = '';
-        toolpanel.hide();
-        drawable.show();
-    });
+    launchWindow(true);
 
     ipc.on('toggleVibrancy', function (event, arg) {
         currentlyTransparent = arg;
         if (!arg) {
-            drawable.setVibrancy(theme);
+            canvas.setVibrancy(theme);
         } else {
-            drawable.setVibrancy('');
+            canvas.setVibrancy('');
         }
 
     });
@@ -239,7 +163,7 @@ app.on('ready', function () {
     ipc.on('updateTheme', function (event, arg) {
         theme = arg;
         if (!currentlyTransparent) {
-            drawable.setVibrancy(arg);
+            canvas.setVibrancy(arg);
         }
     });
 
@@ -270,14 +194,11 @@ app.on('will-quit', function () {
 app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
-        if (toolpanel !== null) {
-            toolpanel.show();
-        }
 
-        if (drawable !== null) {
-            drawable.show();
+        if (canvas !== null) {
+            canvas.show();
         }
-        launchWindows(toolpanel === null, drawable === null);
+        launchWindow(canvas === null);
 
     }
 );
