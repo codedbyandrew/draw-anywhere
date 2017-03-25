@@ -87,6 +87,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     self.lineShadow = true;
     self.theme = "selection";
     self.verticalToolbar = false;
+    self.erasing = false;
 
     self.OCR = false;
     self.recognizedText = '';
@@ -237,6 +238,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         } else {
             contextTmp.shadowColor = "rgba(0, 0, 0, 0)";
         }
+        self.lineShadow = enabled;
     };
 
     self.toggleVibrancy = function () {
@@ -315,7 +317,32 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
                 return 'top-left';
             }
         }
-    }
+    };
+
+    var previousCompositeOperation;
+    var previousColor;
+    var shadow;
+    self.toggleEraser = function () {
+        self.erasing = !self.erasing;
+        var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId);
+        var context = canvasTmp.getContext('2d');
+        if (self.erasing) {
+            shadow = self.lineShadow;
+            if (self.lineShadow) {
+                self.toggleLineShadow(false);
+            }
+            previousCompositeOperation = context.globalCompositeOperation;
+            previousColor = self.canvasOptions.color;
+            context.globalCompositeOperation = "destination-out";
+            context.strokeStyle = "rgba(255,255,255,1)";
+        } else {
+            if (shadow) {
+                self.toggleLineShadow(true);
+            }
+            context.globalCompositeOperation = previousCompositeOperation;
+            self.canvasOptions.color = previousColor;
+        }
+    };
 
 }]);
 
@@ -345,13 +372,11 @@ app.directive('ngDraggable', function ($document) {
                 }
                 rotated = $('#' + element.id).hasClass('rotated');
                 if (rotated) {
-                    console.log('rotated');
                     height = element.offsetWidth;
                     width = element.offsetHeight;
                 } else {
                     width = element.offsetWidth;
                     height = element.offsetHeight;
-                    console.log('not rotated');
                 }
 
                 e.preventDefault();

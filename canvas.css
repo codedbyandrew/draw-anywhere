@@ -68,7 +68,7 @@ body.transparent {
 
 #toolbar {
     height: 36px;
-    width: 481px;
+    width: 529px;
     border-radius: 4px;
     -webkit-user-select: none;
     flex-shrink: 0;
@@ -80,7 +80,7 @@ body.transparent {
     position: absolute;
     -webkit-app-region: no-drag;
     padding: 0 0 0 0;
-    left: calc(50% - 240px);
+    left: calc(50% - 264px);
     top: 56px;
     box-shadow: 0 0 3px rgba(0, 0, 0, .44); /*, inset 0px 1px 1px rgba(255,255,255,.1);*/
     transition: transform ease .5s, box-shadow ease .5s;
@@ -132,6 +132,10 @@ body.transparent {
 
 button:disabled {
     opacity: .5;
+}
+
+button.enabled i {
+    color: #64bd63;
 }
 
 #toolbar button, #circular-toolbar button {

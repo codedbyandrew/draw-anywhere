@@ -37,11 +37,11 @@
 <script type="text/ng-template" id="OCRTemplate.html">
     <form>
         <div class="form-group">
-            <label>OCR Output</label>
+            <label>Text Recognition</label>
             <textarea ng-model="canvasCtrl.recognizedText"
                       class="form-control"
                       placeholder="No recognized text yet..."></textarea>
-            <small class="form-text text-muted">Works best with dark text.</small>
+            <small class="form-text text-muted">Works best with neat dark text.</small>
         </div>
     </form>
 </script>
@@ -114,6 +114,12 @@
         <i class="mdi mdi-settings" aria-hidden="true"></i>
     </button>
     <button ng-disabled="canvasCtrl.version == 0"
+            ng-click="canvasCtrl.toggleEraser()"
+            title="Erase"
+            ng-class="{'enabled': canvasCtrl.erasing}">
+        <i class="mdi mdi-eraser" aria-hidden="true"></i>
+    </button>
+    <button ng-disabled="canvasCtrl.version == 0"
             ng-click="canvasCtrl.version = canvasCtrl.version - 1"
             title="Undo last stroke">
         <i class="mdi mdi-undo" aria-hidden="true"></i>
@@ -122,13 +128,14 @@
             title="Clear canvas">
         <i class="mdi mdi-delete" aria-hidden="true" ng-click="canvasCtrl.version = 0"></i>
     </button>
-    <button title="Enable OCR"
+    <button title="Text recognition"
             ng-click="canvasCtrl.OCR = !canvasCtrl.OCR"
             popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
             popover-is-open="canvasCtrl.OCR"
             popover-append-to-body="true"
+            ng-class="{'enabled': canvasCtrl.OCR}"
             uib-popover-template="canvasCtrl.OCRTemplate">
-        <i class="mdi" ng-class="canvasCtrl.OCR? 'mdi-camera-off' : 'mdi-camera'" aria-hidden="true"></i>
+        <i class="mdi" ng-class="canvasCtrl.OCR? 'mdi-camera' : 'mdi-camera-off'" aria-hidden="true"></i>
     </button>
     <button ng-click="canvasCtrl.toggleVibrancy()"
             title="Toggle transparency">
