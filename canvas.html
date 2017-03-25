@@ -93,11 +93,11 @@
     <span>Draw Anywhere - Canvas</span>
 </div>
 <div id="toolbar"
-     ng-class="{'verticalToolbar':canvasCtrl.verticalToolbar}">
+     ng-class="{'rotated':canvasCtrl.verticalToolbar}">
     <button id="preview"
             title="Adjust color & line weight"
             uib-popover-template="canvasCtrl.strokeAdjustTemplate"
-            popover-placement="{{canvasCtrl.verticalToolbar ? 'left': 'bottom-left'}}"
+            popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
             popover-trigger="'outsideClick'"
             popover-append-to-body="true">
         <div id="stroke-preview"
@@ -109,7 +109,7 @@
     <div class="separator-vertical"></div>
     <button uib-popover-template="canvasCtrl.configurationTemplate"
             title="Settings"
-            popover-placement="{{canvasCtrl.verticalToolbar ? 'left': 'bottom-left'}}"
+            popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="mdi mdi-settings" aria-hidden="true"></i>
     </button>
@@ -124,9 +124,9 @@
     </button>
     <button title="Enable OCR"
             ng-click="canvasCtrl.OCR = !canvasCtrl.OCR"
-            popover-placement="{{canvasCtrl.verticalToolbar ? 'left': 'bottom-left'}}"
-            popover-trigger="none"
+            popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
             popover-is-open="canvasCtrl.OCR"
+            popover-append-to-body="true"
             uib-popover-template="canvasCtrl.OCRTemplate">
         <i class="mdi" ng-class="canvasCtrl.OCR? 'mdi-camera-off' : 'mdi-camera'" aria-hidden="true"></i>
     </button>
@@ -144,13 +144,15 @@
             title="Save canvas">
         <i class="mdi mdi-content-save" aria-hidden="true"></i>
     </button>
-    <button ng-click=""
+    <button ng-click="canvasCtrl.verticalToolbar = !canvasCtrl.verticalToolbar"
             title="Rotate toolbar">
-        <i class="mdi mdi-rotate-right-variant" aria-hidden="true"></i>
+        <i class="mdi"
+           ng-class="canvasCtrl.verticalToolbar?'mdi-rotate-left-variant mdi-rotate-90':'mdi-rotate-right-variant'"
+           aria-hidden="true"></i>
     </button>
     <button ng-draggable="canvasCtrl.dragOptions"
             title="Drag toolbar">
-        <i class="mdi mdi-drag" aria-hidden="true"></i>
+        <i class="mdi mdi-drag" ng-class="{'mdi-rotate-90':canvasCtrl.verticalToolbar}" aria-hidden="true"></i>
     </button>
 </div>
 

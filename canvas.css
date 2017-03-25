@@ -84,23 +84,32 @@ body.transparent {
     top: 56px;
     box-shadow: 0 0 3px rgba(0, 0, 0, .44); /*, inset 0px 1px 1px rgba(255,255,255,.1);*/
     transition: transform ease .5s, box-shadow ease .5s;
+    transform-origin: top left;
 }
 
 .drawing > #toolbar {
     z-index: 1;
 }
 
-.verticalToolbar i {
-    transform: rotate(90deg);
+#toolbar i:before {
+    transition: transform ease .5s;
+}
+
+#toolbar.rotated i:before {
+    transform: rotate(-90deg);
+}
+
+#toolbar.rotated i.mdi-rotate-90:before {
+    transform: rotate(0deg);
 }
 
 .transparent > #toolbar {
     box-shadow: 0 26px 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
 
-#toolbar.verticalToolbar {
-    transform: rotate(-90deg);
-    box-shadow: -26px 0 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
+#toolbar.rotated {
+    transform: rotate(90deg);
+    box-shadow: 26px 0 43px rgba(0, 0, 0, .47), 0 0 3px rgba(0, 0, 0, .44);
 }
 
 .separator-vertical {

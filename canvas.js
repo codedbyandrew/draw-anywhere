@@ -30,8 +30,8 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
 
     var pixelRatio = window.devicePixelRatio;
     self.canvasOptions = {
-        width: pixelRatio * $window.innerWidth, //px
-        height: pixelRatio * $window.innerHeight, //px
+        width: pixelRatio * ($window.innerWidth), //px
+        height: pixelRatio * ($window.innerHeight), //px
         backgroundColor: 'rgba(255,255,255,0)',
         color: 'rgba(0, 0, 0, 1)',
         lineWidth: 10, //px
@@ -73,18 +73,20 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
             $scope.$apply();
         },
         container: 'drag-region',
-        element: document.getElementById('toolbar')
+        element: document.getElementById('toolbar'),
+        top: true,
+        left: false
     };
 
     self.cover = false;
     self.currentlyTransparent = false;
-    self.verticalToolbar = false;
     self.currentPort = '';
     self.ports = [];
     self.drawing = false;
     self.gridVisible = true;
     self.lineShadow = true;
     self.theme = "selection";
+    self.verticalToolbar = false;
 
     self.OCR = false;
     self.recognizedText = '';
@@ -299,6 +301,22 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         shell.openExternal(url);
     };
 
+    self.getTooltipPlacement = function () {
+        if (self.verticalToolbar) {
+            if (self.dragOptions.left) {
+                return 'right-top';
+            } else {
+                return 'left-top';
+            }
+        } else {
+            if (self.dragOptions.top) {
+                return 'bottom-left';
+            } else {
+                return 'top-left';
+            }
+        }
+    }
+
 }]);
 
 app.directive('ngDraggable', function ($document) {
@@ -309,7 +327,7 @@ app.directive('ngDraggable', function ($document) {
         },
         link: function (scope, elem, attr) {
             var startX, startY, x = 0, y = 0,
-                start, stop, drag, container, element;
+                start, stop, drag, container, element, width, height, rotated;
 
             // Obtain drag options
             if (scope.dragOptions) {
@@ -318,15 +336,24 @@ app.directive('ngDraggable', function ($document) {
                 stop = scope.dragOptions.stop;
                 element = scope.dragOptions.element;
                 var id = scope.dragOptions.container;
-                if (id) {
-                    container = document.getElementById(id).getBoundingClientRect();
-                }
             }
-            var width = element.offsetWidth,
-                height = element.offsetHeight;
 
             // Bind mousedown event
             elem.on('mousedown', function (e) {
+                if (id) {
+                    container = document.getElementById(id).getBoundingClientRect();
+                }
+                rotated = $('#' + element.id).hasClass('rotated');
+                if (rotated) {
+                    console.log('rotated');
+                    height = element.offsetWidth;
+                    width = element.offsetHeight;
+                } else {
+                    width = element.offsetWidth;
+                    height = element.offsetHeight;
+                    console.log('not rotated');
+                }
+
                 e.preventDefault();
                 startX = e.clientX - element.offsetLeft;
                 startY = e.clientY - element.offsetTop;
@@ -352,11 +379,11 @@ app.directive('ngDraggable', function ($document) {
 
             // Move element, within container if provided
             function setPosition() {
-                if (container && !element.classList.contains('verticalToolbar')) {
-                    if (x < container.left) {
-                        x = container.left;
-                    } else if (x > container.right - width) {
-                        x = container.right - width;
+                if (container) {
+                    if (x < (rotated ? (width - container.left) : container.left)) {
+                        x = rotated ? (width + container - left) : container.left;
+                    } else if (x > (rotated ? container.right : (container.right - width))) {
+                        x = rotated ? container.right : (container.right - width);
                     }
                     if (y < container.top) {
                         y = container.top;
@@ -367,6 +394,9 @@ app.directive('ngDraggable', function ($document) {
 
                 element.style.top = y + 'px';
                 element.style.left = x + 'px';
+
+                scope.dragOptions.top = ((y - container.top) < (container.height / 2));
+                scope.dragOptions.left = ((x - container.left) < (container.width / 2));
             }
         }
     }
