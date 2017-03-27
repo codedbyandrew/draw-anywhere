@@ -5,7 +5,7 @@ const clipboard = electron.clipboard;
 const nativeImage = electron.nativeImage;
 const {dialog} = electron.remote;
 const jQuery = require("jquery");
-var $ = jQuery;
+let $ = jQuery;
 var angular = require('angular');
 const fs = require('fs');
 require('angular-animate');
@@ -14,21 +14,21 @@ require('angular-ui-switch');
 require('angular-canvas-painter');
 require('angular-hotkeys');
 const bootstrap = require('bootstrap');
-require('tinycolor2');
+const tinycolor = require('tinycolor2');
 require('angularjs-color-picker');
 const trimCanvas = require('trim-canvas');
-var Ocrad = require('ocrad.js');
+const Ocrad = require('ocrad.js');
 
-var app = angular.module('canvas', ['ui.bootstrap', 'uiSwitch', 'ngAnimate', 'pw.canvas-painter', 'color.picker', 'cfp.hotkeys']);
+let app = angular.module('canvas', ['ui.bootstrap', 'uiSwitch', 'ngAnimate', 'pw.canvas-painter', 'color.picker', 'cfp.hotkeys']);
 
 app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', function ($scope, $window, hotkeys, $document) {
-    var self = this;
+    let self = this;
 
     self.strokeAdjustTemplate = "strokeAdjustTemplate.html";
     self.configurationTemplate = "configurationTemplate.html";
     self.OCRTemplate = "OCRTemplate.html";
 
-    var pixelRatio = window.devicePixelRatio;
+    let pixelRatio = window.devicePixelRatio;
     self.canvasOptions = {
         width: pixelRatio * ($window.innerWidth), //px
         height: pixelRatio * ($window.innerHeight), //px
@@ -57,6 +57,12 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         swatchOnly: true,
         // popup
         inline: true
+    };
+
+    self.colorPickerEvents = {
+        onChange: function (api, color, $event) {
+            self.toggleEraser(false, color);
+        }
     };
 
     self.dragOptions = {
@@ -113,25 +119,24 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         return self.version;
     }, function () {
         if (self.OCR) {
-            if (self.version == 0) {
+            if (self.version === 0) {
                 self.recognizedText = "";
                 return;
             }
             setTimeout(function () {
-                var canvas = document.getElementById(self.canvasOptions.customCanvasId);
-                var newCanvas = cloneCanvas(canvas);
+                let canvas = document.getElementById(self.canvasOptions.customCanvasId);
+                let newCanvas = cloneCanvas(canvas);
                 newCanvas = trimCanvas.default(newCanvas);
-                var context = newCanvas.getContext('2d');
-                var w = canvas.width;
-                var h = canvas.height;
-                var compositeOperation = context.globalCompositeOperation;
+                let context = newCanvas.getContext('2d');
+                let w = canvas.width;
+                let h = canvas.height;
+                let compositeOperation = context.globalCompositeOperation;
                 context.globalCompositeOperation = "destination-over";
                 context.fillStyle = 'rgb(255,255,255)';
                 context.fillRect(0, 0, w, h);
                 context.globalCompositeOperation = compositeOperation;
                 self.recognizedText = Ocrad(newCanvas);
                 $scope.$apply();
-
             }, 100);
         }
     });
@@ -203,7 +208,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         }
     });
 
-    var w = angular.element($window);
+    let w = angular.element($window);
     w.bind('resize', function () {
         // only update canvas if it has grown in one dimension
         //TODO: fix for retina pixelratio
@@ -216,9 +221,9 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     });
 
     $document.ready(function () {
-        var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
-        var canvas = document.getElementById(self.canvasOptions.customCanvasId);
-        var contextTmp = canvasTmp.getContext("2d");
+        let canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
+        let canvas = document.getElementById(self.canvasOptions.customCanvasId);
+        let contextTmp = canvasTmp.getContext("2d");
         contextTmp.scale(pixelRatio, pixelRatio);
         canvasTmp.style.width = canvasTmp.width * (1 / pixelRatio) + "px";
         canvasTmp.style.height = canvasTmp.height * (1 / pixelRatio) + "px";
@@ -228,8 +233,8 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     });
 
     self.toggleLineShadow = function (enabled) {
-        var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
-        var contextTmp = canvasTmp.getContext("2d");
+        let canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
+        let contextTmp = canvasTmp.getContext("2d");
         if (enabled) {
             contextTmp.shadowColor = "rgba(0, 0, 0, .47)";
             contextTmp.shadowOffsetX = 0;
@@ -251,7 +256,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     };
 
     self.copyToClipboard = function () {
-        if (self.version == 0) {
+        if (self.version === 0) {
             return;
         }
         $('#drag-region').addClass('flash');
@@ -259,30 +264,44 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
             $("#drag-region").removeClass("flash");
         }, 1000);
 
-        var canvas = document.getElementById(self.canvasOptions.customCanvasId);
-        var newCanvas = cloneCanvas(canvas);
+        let canvas = document.getElementById(self.canvasOptions.customCanvasId);
+        let newCanvas = cloneCanvas(canvas);
         newCanvas = trimCanvas.default(newCanvas);
-        var image = newCanvas.toDataURL("image/png");
+        let image = newCanvas.toDataURL("image/png");
         clipboard.writeImage(nativeImage.createFromDataURL(image));
     };
 
     self.saveCanvas = function () {
-        if (self.version == 0) {
+        if (self.version === 0) {
             return;
         }
         dialog.showSaveDialog(
             {
                 title: 'Save canvas',
-                filters: [{name: 'Image', extensions: ['png']}]
+                filters: [{name: 'Image', extensions: ['png', 'jpeg', 'bmp']}]
             }
             , function (fileName) {
                 if (fileName === undefined) return;
-                var canvas = document.getElementById(self.canvasOptions.customCanvasId);
-                var newCanvas = cloneCanvas(canvas);
+                let canvas = document.getElementById(self.canvasOptions.customCanvasId);
+                let newCanvas = cloneCanvas(canvas);
                 newCanvas = trimCanvas.default(newCanvas);
-                var image = newCanvas.toDataURL("image/png");
-                console.log(fileName);
-                fs.writeFile(fileName, nativeImage.createFromDataURL(image).toPNG(), function (err) {
+                let image;
+                let ext = fileName.substring(fileName.lastIndexOf('.'));
+                switch (ext) {
+                    case 'png':
+                        image = nativeImage.createFromDataURL(newCanvas.toDataURL("image/png")).toPNG();
+                        break;
+                    case 'jpeg':
+                        image = nativeImage.createFromDataURL(newCanvas.toDataURL("image/jpeg")).toJPEG();
+                        break;
+                    case 'bmp':
+                        image = nativeImage.createFromDataURL(newCanvas.toDataURL("image/bmp")).toBitmap();
+                        break;
+                    default:
+                        console.log("Unsupported image file type:", ext);
+                        image = nativeImage.createFromDataURL(newCanvas.toDataURL("image/png")).toPNG();
+                }
+                fs.writeFile(fileName, image, function (err) {
                 });
             });
     };
@@ -319,13 +338,20 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         }
     };
 
-    var previousCompositeOperation;
-    var previousColor;
-    var shadow;
-    self.toggleEraser = function () {
-        self.erasing = !self.erasing;
-        var canvasTmp = document.getElementById(self.canvasOptions.customCanvasId);
-        var context = canvasTmp.getContext('2d');
+    let previousCompositeOperation;
+    let previousColor;
+    let shadow;
+    self.toggleEraser = function (enabled, color) {
+        if (enabled !== undefined) {
+            if ((!enabled && !self.erasing) || (enabled && self.erasing)) {
+                return;
+            }
+            self.erasing = enabled;
+        } else {
+            self.erasing = !self.erasing;
+        }
+        let canvasTmp = document.getElementById(self.canvasOptions.customCanvasId);
+        let context = canvasTmp.getContext('2d');
         if (self.erasing) {
             shadow = self.lineShadow;
             if (self.lineShadow) {
@@ -333,6 +359,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
             }
             previousCompositeOperation = context.globalCompositeOperation;
             previousColor = self.canvasOptions.color;
+            self.canvasOptions.color = invertRGB(self.canvasOptions.color);
             context.globalCompositeOperation = "destination-out";
             context.strokeStyle = "rgba(255,255,255,1)";
         } else {
@@ -340,7 +367,9 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
                 self.toggleLineShadow(true);
             }
             context.globalCompositeOperation = previousCompositeOperation;
-            self.canvasOptions.color = previousColor;
+            if (color === undefined) {
+                self.canvasOptions.color = previousColor;
+            }
         }
     };
 
@@ -353,7 +382,7 @@ app.directive('ngDraggable', function ($document) {
             dragOptions: '=ngDraggable'
         },
         link: function (scope, elem, attr) {
-            var startX, startY, x = 0, y = 0,
+            let startX, startY, x = 0, y = 0,
                 start, stop, drag, container, element, width, height, rotated;
 
             // Obtain drag options
@@ -362,7 +391,7 @@ app.directive('ngDraggable', function ($document) {
                 drag = scope.dragOptions.drag;
                 stop = scope.dragOptions.stop;
                 element = scope.dragOptions.element;
-                var id = scope.dragOptions.container;
+                let id = scope.dragOptions.container;
             }
 
             // Bind mousedown event
@@ -430,8 +459,8 @@ app.directive('ngDraggable', function ($document) {
 function cloneCanvas(oldCanvas) {
 
     // create a new canvas
-    var newCanvas = document.createElement('canvas');
-    var context = newCanvas.getContext('2d');
+    let newCanvas = document.createElement('canvas');
+    let context = newCanvas.getContext('2d');
 
     // set dimensions
     newCanvas.width = oldCanvas.width;
@@ -440,6 +469,11 @@ function cloneCanvas(oldCanvas) {
     // apply the old canvas to the new one
     context.drawImage(oldCanvas, 0, 0);
 
-    // return the new canvas
     return newCanvas;
+}
+
+function invertRGB(rgbColor) {
+    let rgb = tinycolor(rgbColor).toRgb();
+    let color = new tinycolor({r: 255 - rgb.r, g: 255 - rgb.g, b: 255 - rgb.b});
+    return color.toRgbString();
 }

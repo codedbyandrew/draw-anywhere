@@ -30,6 +30,7 @@
         <label for="inline">Color</label><br>
         <color-picker id="inline"
                       ng-model="canvasCtrl.canvasOptions.color"
+                      event-api="canvasCtrl.colorPickerEvents"
                       options="canvasCtrl.colorPickerConfig">
         </color-picker>
     </form>
@@ -113,8 +114,7 @@
             popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
         <i class="mdi mdi-settings" aria-hidden="true"></i>
     </button>
-    <button ng-disabled="canvasCtrl.version == 0"
-            ng-click="canvasCtrl.toggleEraser()"
+    <button ng-click="canvasCtrl.toggleEraser()"
             title="Erase"
             ng-class="{'enabled': canvasCtrl.erasing}">
         <i class="mdi mdi-eraser" aria-hidden="true"></i>
