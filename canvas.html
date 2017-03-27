@@ -75,17 +75,15 @@
         <label><i class="mdi" ng-class="canvasCtrl.currentPort ? 'mdi-pencil' : 'mdi-pencil-off' "
                   aria-hidden="true"></i>USB</label>
         <div class="right-config">
-            <select ng-model="canvasCtrl.currentPort" ng-change="canvasCtrl.setPort()">
-                <option ng-repeat="port in canvasCtrl.ports" value="port.comName">{{port.comName}}</option>
+            <select ng-model="canvasCtrl.currentPort"
+                    ng-options="f as f.comName for f in canvasCtrl.ports"
+                    ng-change="canvasCtrl.setPort()">
             </select>
         </div>
         <div class="hr-divider"></div>
         <label><i class="mdi mdi-auto-fix" aria-hidden="true"></i>Quick Toggle</label>
         <div class="right-config">
-            <select ng-model="canvasCtrl.toggle">
-                <option value="ultra-dark">Hide/Show canvas</option>
-                <option value="dark">Undo last stroke</option>
-                <option value="selection">Minimize/Maximize window</option>
+            <select ng-model="canvasCtrl.toggle" ng-options="f.fn as f.value for f in canvasCtrl.quickToggleOptions">
             </select>
         </div>
     </form>

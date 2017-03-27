@@ -16,7 +16,7 @@ var currentlyTransparent = false;
 var self = this;
 
 self.ports = [];
-self.currentPort = '';
+self.currentPortIndex = 0;
 
 // https://github.com/EmergingTechnologyAdvisors/node-serialport/blob/4.0.7/README.md#serialport-path-options-opencallback
 var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
@@ -38,6 +38,11 @@ const terminal = readline.createInterface({
 function getPorts() {
     SerialPort.list(function (err, ports) {
         self.ports = ports;
+        ports.forEach(function (port, i) {
+            if (port.manufacturer == "FTDI") {
+                self.currentPortIndex = i;
+            }
+        });
     });
 }
 getPorts();
@@ -172,7 +177,7 @@ app.on('ready', function () {
         config.currentlyTransparent = currentlyTransparent;
         config.theme = theme;
         config.ports = self.ports;
-        config.currentPort = self.currentPort;
+        config.currentPort = self.currentPortIndex;
         event.sender.send('windowConfig', config);
     })
 });

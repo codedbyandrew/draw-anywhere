@@ -105,7 +105,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         self.currentlyTransparent = config.currentlyTransparent;
         self.theme = config.theme;
         self.ports = config.ports;
-        self.currentPort = config.currentPort;
+        self.currentPort = config.ports[config.currentPort];
         $scope.$apply();
     });
 
@@ -198,6 +198,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         combo: 'alt',
         description: 'Quick toggle',
         callback: function () {
+            self.quickToggle();
         }
     });
 
@@ -205,6 +206,14 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         combo: 'command+r',
         description: 'Reload',
         callback: function () {
+        }
+    });
+
+    hotkeys.add({
+        combo: 'e',
+        description: 'Toggle erase',
+        callback: function () {
+            self.toggleEraser();
         }
     });
 
@@ -373,6 +382,28 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         }
     };
 
+    self.undoStroke = function () {
+        self.version = self.version - 1;
+    };
+
+    self.toggleMinimize = function () {
+
+    };
+
+    // These toggle options need to be at the end of this document, since the functions are not yet defined until here
+    self.toggleFn = self.undoStroke;
+    self.quickToggleOptions = [
+        {value: "Hide/Show canvas", fn: self.toggleVibrancy},
+        {value: "Undo last stroke", fn: self.undoStroke},
+        {value: "Minimize/Maximize window", fn: self.toggleMinimize},
+        {value: "Toggle eraser", fn: self.toggleEraser}
+    ];
+
+    self.quickToggle = function () {
+        console.log(self.toggleFn);
+        self.toggleFn();
+    }
+
 }]);
 
 app.directive('ngDraggable', function ($document) {
@@ -383,7 +414,7 @@ app.directive('ngDraggable', function ($document) {
         },
         link: function (scope, elem, attr) {
             let startX, startY, x = 0, y = 0,
-                start, stop, drag, container, element, width, height, rotated;
+                start, stop, drag, container, element, width, height, rotated, id;
 
             // Obtain drag options
             if (scope.dragOptions) {
@@ -391,7 +422,7 @@ app.directive('ngDraggable', function ($document) {
                 drag = scope.dragOptions.drag;
                 stop = scope.dragOptions.stop;
                 element = scope.dragOptions.element;
-                let id = scope.dragOptions.container;
+                id = scope.dragOptions.container;
             }
 
             // Bind mousedown event
@@ -411,7 +442,9 @@ app.directive('ngDraggable', function ($document) {
                 e.preventDefault();
                 startX = e.clientX - element.offsetLeft;
                 startY = e.clientY - element.offsetTop;
-                if (start) start(e);
+                if (start) {
+                    start(e);
+                }
                 $document.on('mousemove', mousemove);
                 $document.on('mouseup', mouseup);
             });
@@ -435,14 +468,14 @@ app.directive('ngDraggable', function ($document) {
             function setPosition() {
                 if (container) {
                     if (x < (rotated ? (width - container.left) : container.left)) {
-                        x = rotated ? (width + container - left) : container.left;
+                        x = rotated ? (width + container.left) : container.left;
                     } else if (x > (rotated ? container.right : (container.right - width))) {
                         x = rotated ? container.right : (container.right - width);
                     }
                     if (y < container.top) {
                         y = container.top;
-                    } else if (y > container.bottom - height) {
-                        y = container.bottom - height;
+                    } else if (y > container.bottom - height - container.top) {
+                        y = container.bottom - height - container.top;
                     }
                 }
 
