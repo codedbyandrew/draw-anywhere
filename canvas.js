@@ -391,17 +391,17 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     };
 
     // These toggle options need to be at the end of this document, since the functions are not yet defined until here
-    self.toggleFn = self.undoStroke;
     self.quickToggleOptions = [
         {value: "Hide/Show canvas", fn: self.toggleVibrancy},
         {value: "Undo last stroke", fn: self.undoStroke},
         {value: "Minimize/Maximize window", fn: self.toggleMinimize},
         {value: "Toggle eraser", fn: self.toggleEraser}
     ];
+    self.toggle = self.quickToggleOptions[1];
 
     self.quickToggle = function () {
-        console.log(self.toggleFn);
-        self.toggleFn();
+        console.log(self.toggle.fn);
+        self.toggle.fn();
     }
 
 }]);

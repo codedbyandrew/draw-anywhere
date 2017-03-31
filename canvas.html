@@ -83,13 +83,17 @@
         <div class="hr-divider"></div>
         <label><i class="mdi mdi-auto-fix" aria-hidden="true"></i>Quick Toggle</label>
         <div class="right-config">
-            <select ng-model="canvasCtrl.toggle" ng-options="f.fn as f.value for f in canvasCtrl.quickToggleOptions">
+            <select ng-model="canvasCtrl.toggle" ng-options="f.value for f in canvasCtrl.quickToggleOptions">
             </select>
         </div>
     </form>
 </script>
+
+<div id="title-back"></div>
 <div id="title">
-    <span>Draw Anywhere - Canvas</span>
+    <div id="title-inner">
+        <span>Draw Anywhere - Canvas</span>
+    </div>
 </div>
 <div id="toolbar"
      ng-class="{'rotated':canvasCtrl.verticalToolbar}">

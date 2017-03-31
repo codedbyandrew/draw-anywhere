@@ -109,12 +109,15 @@ function createCanvasWindow(width, height) {
         transparent: true,
         titleBarStyle: 'hidden-inset',
         show: false,
-        frame: true,
+        frame: false,
         resizable: true,
-        fullscreenable: true,
-        hasShadow: false,  // buggy, on window resize ghost shadows appear
+        fullscreenable: false,
+        hasShadow: true,  // buggy, on window resize transparent ghost shadows appear
         useContentSize: true,
-        vibrancy: theme
+        vibrancy: theme,
+        webPreferences: {
+            experimentalFeatures: true
+        }
     });
 
     // and load the index.html of the app.
@@ -159,8 +162,10 @@ app.on('ready', function () {
         currentlyTransparent = arg;
         if (!arg) {
             canvas.setVibrancy(theme);
+            canvas.setHasShadow(true);
         } else {
             canvas.setVibrancy('');
+            canvas.setHasShadow(false);
         }
 
     });
