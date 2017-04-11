@@ -240,46 +240,46 @@ assign   VGA_VS               =     vid_v_sync;
 assign   VGA_HS               =     vid_h_sync;
 
 vga_pll  vga_pll_inst(
-			.refclk(CLOCK_50),   //  refclk.clk
-		   .rst(1'b0),      //   reset.reset
-		   .outclk_0(clk_65), // outclk0.clk
-		   .outclk_1(clk_130), // outclk1.clk
-		   .locked()    //  locked.export
+      .refclk(CLOCK_50),   //  refclk.clk
+       .rst(1'b0),      //   reset.reset
+       .outclk_0(clk_65), // outclk0.clk
+       .outclk_1(clk_130), // outclk1.clk
+       .locked()    //  locked.export
 );
 
 
-//=====================================================================================//		
+//=====================================================================================//
 // ECE 453 START
 //=====================================================================================
 
 // ECE453 Module Connections
   wire [16:0] ece453_gpio_out_unused;
   wire [9:0] ece453_leds;
-  
+
 // i2c connection
   wire scl_o_e;
   wire scl_o;
   wire sda_o_e;
-  wire sda_o; 
-  
+  wire sda_o;
+
 ALT_IOBUF scl_iobuf (.i(1'b0), .oe(scl_o_e), .o(scl_o), .io(GPIO_1[7])); //declared bi-directional buffer for scl
 ALT_IOBUF sda_iobuf (.i(1'b0), .oe(sda_o_e), .o(sda_o), .io(GPIO_1[11])); //declared bi-directional buffer for s
 
-		//.ece453_0_switches					(SW),
-		//.ece453_0_buttons						(KEY),
-		//.ece453_0_lcd_cmd						(GPIO_1[17]),
-		//.ece453_0_leds							(LEDR),
-		//.ece453_0_ws2812b						(GPIO_1[1]),
-		
-//=====================================================================================//		
+    //.ece453_0_switches          (SW),
+    //.ece453_0_buttons            (KEY),
+    //.ece453_0_lcd_cmd            (GPIO_1[17]),
+    //.ece453_0_leds              (LEDR),
+    //.ece453_0_ws2812b            (GPIO_1[1]),
+
+//=====================================================================================//
 // ECE 453 END
 //=====================================================================================
-		
+
 soc_system u0 (
-		  .clk_clk                               (CLOCK_50),                             //                clk.clk
-		  .reset_reset_n                         (hps_fpga_reset_n),                                 //                reset.reset_n
-		  //HPS ddr3
-		  .memory_mem_a                          ( HPS_DDR3_ADDR),                       //                memory.mem_a
+      .clk_clk                               (CLOCK_50),                             //                clk.clk
+      .reset_reset_n                         (hps_fpga_reset_n),                                 //                reset.reset_n
+      //HPS ddr3
+      .memory_mem_a                          ( HPS_DDR3_ADDR),                       //                memory.mem_a
         .memory_mem_ba                         ( HPS_DDR3_BA),                         //                .mem_ba
         .memory_mem_ck                         ( HPS_DDR3_CK_P),                       //                .mem_ck
         .memory_mem_ck_n                       ( HPS_DDR3_CK_N),                       //                .mem_ck_n
@@ -296,7 +296,7 @@ soc_system u0 (
         .memory_mem_dm                         ( HPS_DDR3_DM),                         //                .mem_dm
         .memory_oct_rzqin                      ( HPS_DDR3_RZQ),                        //                .oct_rzqin
        //HPS ethernet
-	     .hps_0_hps_io_hps_io_emac1_inst_TX_CLK ( HPS_ENET_GTX_CLK),       //                             hps_0_hps_io.hps_io_emac1_inst_TX_CLK
+       .hps_0_hps_io_hps_io_emac1_inst_TX_CLK ( HPS_ENET_GTX_CLK),       //                             hps_0_hps_io.hps_io_emac1_inst_TX_CLK
         .hps_0_hps_io_hps_io_emac1_inst_TXD0   ( HPS_ENET_TX_DATA[0] ),   //                             .hps_io_emac1_inst_TXD0
         .hps_0_hps_io_hps_io_emac1_inst_TXD1   ( HPS_ENET_TX_DATA[1] ),   //                             .hps_io_emac1_inst_TXD1
         .hps_0_hps_io_hps_io_emac1_inst_TXD2   ( HPS_ENET_TX_DATA[2] ),   //                             .hps_io_emac1_inst_TXD2
@@ -311,21 +311,21 @@ soc_system u0 (
         .hps_0_hps_io_hps_io_emac1_inst_RXD2   ( HPS_ENET_RX_DATA[2] ),   //                             .hps_io_emac1_inst_RXD2
         .hps_0_hps_io_hps_io_emac1_inst_RXD3   ( HPS_ENET_RX_DATA[3] ),   //                             .hps_io_emac1_inst_RXD3
        //HPS QSPI
-		  .hps_0_hps_io_hps_io_qspi_inst_IO0     ( HPS_FLASH_DATA[0]    ),     //                               .hps_io_qspi_inst_IO0
+      .hps_0_hps_io_hps_io_qspi_inst_IO0     ( HPS_FLASH_DATA[0]    ),     //                               .hps_io_qspi_inst_IO0
         .hps_0_hps_io_hps_io_qspi_inst_IO1     ( HPS_FLASH_DATA[1]    ),     //                               .hps_io_qspi_inst_IO1
         .hps_0_hps_io_hps_io_qspi_inst_IO2     ( HPS_FLASH_DATA[2]    ),     //                               .hps_io_qspi_inst_IO2
         .hps_0_hps_io_hps_io_qspi_inst_IO3     ( HPS_FLASH_DATA[3]    ),     //                               .hps_io_qspi_inst_IO3
         .hps_0_hps_io_hps_io_qspi_inst_SS0     ( HPS_FLASH_NCSO    ),        //                               .hps_io_qspi_inst_SS0
         .hps_0_hps_io_hps_io_qspi_inst_CLK     ( HPS_FLASH_DCLK    ),        //                               .hps_io_qspi_inst_CLK
        //HPS SD card
-		  .hps_0_hps_io_hps_io_sdio_inst_CMD     ( HPS_SD_CMD    ),           //                               .hps_io_sdio_inst_CMD
+      .hps_0_hps_io_hps_io_sdio_inst_CMD     ( HPS_SD_CMD    ),           //                               .hps_io_sdio_inst_CMD
         .hps_0_hps_io_hps_io_sdio_inst_D0      ( HPS_SD_DATA[0]     ),      //                               .hps_io_sdio_inst_D0
         .hps_0_hps_io_hps_io_sdio_inst_D1      ( HPS_SD_DATA[1]     ),      //                               .hps_io_sdio_inst_D1
         .hps_0_hps_io_hps_io_sdio_inst_CLK     ( HPS_SD_CLK   ),            //                               .hps_io_sdio_inst_CLK
         .hps_0_hps_io_hps_io_sdio_inst_D2      ( HPS_SD_DATA[2]     ),      //                               .hps_io_sdio_inst_D2
         .hps_0_hps_io_hps_io_sdio_inst_D3      ( HPS_SD_DATA[3]     ),      //                               .hps_io_sdio_inst_D3
        //HPS USB
-		  .hps_0_hps_io_hps_io_usb1_inst_D0      ( HPS_USB_DATA[0]    ),      //                               .hps_io_usb1_inst_D0
+      .hps_0_hps_io_hps_io_usb1_inst_D0      ( HPS_USB_DATA[0]    ),      //                               .hps_io_usb1_inst_D0
         .hps_0_hps_io_hps_io_usb1_inst_D1      ( HPS_USB_DATA[1]    ),      //                               .hps_io_usb1_inst_D1
         .hps_0_hps_io_hps_io_usb1_inst_D2      ( HPS_USB_DATA[2]    ),      //                               .hps_io_usb1_inst_D2
         .hps_0_hps_io_hps_io_usb1_inst_D3      ( HPS_USB_DATA[3]    ),      //                               .hps_io_usb1_inst_D3
@@ -338,21 +338,21 @@ soc_system u0 (
         .hps_0_hps_io_hps_io_usb1_inst_DIR     ( HPS_USB_DIR    ),          //                               .hps_io_usb1_inst_DIR
         .hps_0_hps_io_hps_io_usb1_inst_NXT     ( HPS_USB_NXT    ),          //                               .hps_io_usb1_inst_NXT
        //HPS SPI
-		  .hps_0_hps_io_hps_io_spim1_inst_CLK    ( HPS_SPIM_CLK  ),           //                               .hps_io_spim1_inst_CLK
+      .hps_0_hps_io_hps_io_spim1_inst_CLK    ( HPS_SPIM_CLK  ),           //                               .hps_io_spim1_inst_CLK
         .hps_0_hps_io_hps_io_spim1_inst_MOSI   ( HPS_SPIM_MOSI ),           //                               .hps_io_spim1_inst_MOSI
         .hps_0_hps_io_hps_io_spim1_inst_MISO   ( HPS_SPIM_MISO ),           //                               .hps_io_spim1_inst_MISO
         .hps_0_hps_io_hps_io_spim1_inst_SS0    ( HPS_SPIM_SS ),             //                               .hps_io_spim1_inst_SS0
       //HPS UART
-		  .hps_0_hps_io_hps_io_uart0_inst_RX     ( HPS_UART_RX    ),          //                               .hps_io_uart0_inst_RX
+      .hps_0_hps_io_hps_io_uart0_inst_RX     ( HPS_UART_RX    ),          //                               .hps_io_uart0_inst_RX
         .hps_0_hps_io_hps_io_uart0_inst_TX     ( HPS_UART_TX    ),          //                               .hps_io_uart0_inst_TX
-		//HPS I2C1
-		  .hps_0_hps_io_hps_io_i2c0_inst_SDA     ( HPS_I2C1_SDAT    ),        //                               .hps_io_i2c0_inst_SDA
+    //HPS I2C1
+      .hps_0_hps_io_hps_io_i2c0_inst_SDA     ( HPS_I2C1_SDAT    ),        //                               .hps_io_i2c0_inst_SDA
         .hps_0_hps_io_hps_io_i2c0_inst_SCL     ( HPS_I2C1_SCLK    ),        //                               .hps_io_i2c0_inst_SCL
-		//HPS I2C2
-		  .hps_0_hps_io_hps_io_i2c1_inst_SDA     ( HPS_I2C2_SDAT    ),        //                               .hps_io_i2c1_inst_SDA
+    //HPS I2C2
+      .hps_0_hps_io_hps_io_i2c1_inst_SDA     ( HPS_I2C2_SDAT    ),        //                               .hps_io_i2c1_inst_SDA
         .hps_0_hps_io_hps_io_i2c1_inst_SCL     ( HPS_I2C2_SCLK    ),        //                               .hps_io_i2c1_inst_SCL
       //HPS GPIO
-		  .hps_0_hps_io_hps_io_gpio_inst_GPIO09  ( HPS_CONV_USB_N),           //                               .hps_io_gpio_inst_GPIO09
+      .hps_0_hps_io_hps_io_gpio_inst_GPIO09  ( HPS_CONV_USB_N),           //                               .hps_io_gpio_inst_GPIO09
         .hps_0_hps_io_hps_io_gpio_inst_GPIO35  ( HPS_ENET_INT_N),           //                               .hps_io_gpio_inst_GPIO35
         .hps_0_hps_io_hps_io_gpio_inst_GPIO40  ( HPS_LTC_GPIO),              //                               .hps_io_gpio_inst_GPIO40
         //.hps_0_hps_io_hps_io_gpio_inst_GPIO41  ( HPS_GPIO[1]),              //                               .hps_io_gpio_inst_GPIO41
@@ -360,64 +360,64 @@ soc_system u0 (
         .hps_0_hps_io_hps_io_gpio_inst_GPIO53  ( HPS_LED),                  //                               .hps_io_gpio_inst_GPIO53
         .hps_0_hps_io_hps_io_gpio_inst_GPIO54  ( HPS_KEY),                  //                               .hps_io_gpio_inst_GPIO54
         .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT),          //                               .hps_io_gpio_inst_GPIO61
-				//HPS reset output
-	  //.led_pio_external_connection_export    ( fpga_led_internal 	),    //    led_pio_external_connection.export
-	  //.dipsw_pio_external_connection_export  ( fpga_dipsw_internal	),  //  dipsw_pio_external_connection.export
-	  //.button_pio_external_connection_export ( fpga_button_internal	), // button_pio_external_connection.export
-	  .hps_0_h2f_reset_reset_n               ( hps_fpga_reset_n ),                //                hps_0_h2f_reset.reset_n
-	  .hps_0_f2h_cold_reset_req_reset_n      (~hps_cold_reset ),      //       hps_0_f2h_cold_reset_req.reset_n
+        //HPS reset output
+    //.led_pio_external_connection_export    ( fpga_led_internal   ),    //    led_pio_external_connection.export
+    //.dipsw_pio_external_connection_export  ( fpga_dipsw_internal  ),  //  dipsw_pio_external_connection.export
+    //.button_pio_external_connection_export ( fpga_button_internal  ), // button_pio_external_connection.export
+    .hps_0_h2f_reset_reset_n               ( hps_fpga_reset_n ),                //                hps_0_h2f_reset.reset_n
+    .hps_0_f2h_cold_reset_req_reset_n      (~hps_cold_reset ),      //       hps_0_f2h_cold_reset_req.reset_n
      .hps_0_f2h_debug_reset_req_reset_n     (~hps_debug_reset ),     //      hps_0_f2h_debug_reset_req.reset_n
      .hps_0_f2h_stm_hw_events_stm_hwevents  (stm_hw_events ),  //        hps_0_f2h_stm_hw_events.stm_hwevents
      .hps_0_f2h_warm_reset_req_reset_n      (~hps_warm_reset ),      //       hps_0_f2h_warm_reset_req.reset_n
 
-		  ////itc
-          .alt_vip_itc_0_clocked_video_vid_clk         (~clk_65),         					 	 // alt_vip_itc_0_clocked_video.vid_clk
-        .alt_vip_itc_0_clocked_video_vid_data        ({vid_r,vid_g,vid_b}),        		 //                .vid_data
-        .alt_vip_itc_0_clocked_video_underflow       (),                           		 //                .underflow
+      ////itc
+          .alt_vip_itc_0_clocked_video_vid_clk         (~clk_65),                       // alt_vip_itc_0_clocked_video.vid_clk
+        .alt_vip_itc_0_clocked_video_vid_data        ({vid_r,vid_g,vid_b}),             //                .vid_data
+        .alt_vip_itc_0_clocked_video_underflow       (),                                //                .underflow
         .alt_vip_itc_0_clocked_video_vid_datavalid   (vid_datavalid),                   //                .vid_datavalid
-        .alt_vip_itc_0_clocked_video_vid_v_sync      (vid_v_sync),      					 //                .vid_v_sync
-        .alt_vip_itc_0_clocked_video_vid_h_sync      (vid_h_sync),      					 //                .vid_h_sync
-        .alt_vip_itc_0_clocked_video_vid_f           (),           							 //                .vid_f
-        .alt_vip_itc_0_clocked_video_vid_h           (),           							 //                .vid_h
+        .alt_vip_itc_0_clocked_video_vid_v_sync      (vid_v_sync),                 //                .vid_v_sync
+        .alt_vip_itc_0_clocked_video_vid_h_sync      (vid_h_sync),                 //                .vid_h_sync
+        .alt_vip_itc_0_clocked_video_vid_f           (),                          //                .vid_f
+        .alt_vip_itc_0_clocked_video_vid_h           (),                          //                .vid_h
         .alt_vip_itc_0_clocked_video_vid_v           (),
         .clk_130_clk                                 (clk_130),
-		  
-		//=====================================================================================//		
-		// ECE 453 START
-		//=====================================================================================//
-		
-		// SPI - LCD Interface
-	  .hps_0_spim0_txd                                   (GPIO_1[13]),
-	  .hps_0_spim0_rxd                                   (1'b1),
-	  .hps_0_spim0_ss_in_n                               (1'b1),
-	  .hps_0_spim0_ssi_oe_n                              (1'b0),
-	  .hps_0_spim0_ss_0_n                                (GPIO_1[21]),
-	  .hps_0_spim0_ss_1_n                                (),
-	  .hps_0_spim0_ss_2_n                                (),
-	  .hps_0_spim0_ss_3_n                                (),
-	  .hps_0_spim0_sclk_out_clk                          (GPIO_1[15]),
-	  
-	  // I2C - Keypad
-		.hps_0_i2c2_out_data				   (sda_o_e),                  
-		.hps_0_i2c2_sda						(sda_o),                    
-		.hps_0_i2c2_clk_clk					(scl_o_e),						  
-		.hps_0_i2c2_scl_in_clk				(scl_o),	
-		
-		.ece453_0_gpio_in_export					({18'h0, KEY, SW}),
-		.ece453_0_gpio_out_export            ({
-														GPIO_1[1],	// WS2812B Out
-														GPIO_1[17], // LCD Command
-														GPIO_1[3],  // LCD_back light
-														GPIO_1[19], // LCD Reset
-														GPIO_1[9],  // Cap Sense Reset
-														ece453_gpio_out_unused,
-														ece453_leds        // Red LEDs+
-														}),
 
-		//=====================================================================================//		
-		// ECE 453 END
-		//=====================================================================================//		
-		  
+    //=====================================================================================//
+    // ECE 453 START
+    //=====================================================================================//
+
+    // SPI - LCD Interface
+    .hps_0_spim0_txd                                   (GPIO_1[13]),
+    .hps_0_spim0_rxd                                   (1'b1),
+    .hps_0_spim0_ss_in_n                               (1'b1),
+    .hps_0_spim0_ssi_oe_n                              (1'b0),
+    .hps_0_spim0_ss_0_n                                (GPIO_1[21]),
+    .hps_0_spim0_ss_1_n                                (),
+    .hps_0_spim0_ss_2_n                                (),
+    .hps_0_spim0_ss_3_n                                (),
+    .hps_0_spim0_sclk_out_clk                          (GPIO_1[15]),
+
+    // I2C - Keypad
+    .hps_0_i2c2_out_data           (sda_o_e),
+    .hps_0_i2c2_sda            (sda_o),
+    .hps_0_i2c2_clk_clk          (scl_o_e),
+    .hps_0_i2c2_scl_in_clk        (scl_o),
+
+    .ece453_0_gpio_in_export          ({18'h0, KEY, SW}),
+    .ece453_0_gpio_out_export            ({
+                            GPIO_1[1],  // WS2812B Out
+                            GPIO_1[17], // LCD Command
+                            GPIO_1[3],  // LCD_back light
+                            GPIO_1[19], // LCD Reset
+                            GPIO_1[9],  // Cap Sense Reset
+                            ece453_gpio_out_unused,
+                            ece453_leds        // Red LEDs+
+                            }),
+
+    //=====================================================================================//
+    // ECE 453 END
+    //=====================================================================================//
+
     );
 
 // Source/Probe megawizard instance
@@ -458,5 +458,3 @@ altera_edge_detector pulse_debug_reset (
 
 
 endmodule
-
-
