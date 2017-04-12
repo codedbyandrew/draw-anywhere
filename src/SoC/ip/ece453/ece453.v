@@ -220,9 +220,9 @@ module ece453(
   spi_rotate rotator(
       .cs(gpio_inputs[14]),
       .active(chip_select_r[2:0]),
-      adc_inputs(gpio_inputs[22:15]),
-      data(gpio_outputs[8]),
-      selected(gpio_outputs[7:0])
+      .adc_inputs(gpio_inputs[22:15]),
+      .data(gpio_outputs[8]),
+      .selected(gpio_outputs[7:0])
     );
 
 
@@ -233,7 +233,7 @@ module spi_rotate (
   input[2:0] active,
   input[7:0] adc_inputs,
   output data,
-  output[7:0] selected
+  output reg [7:0] selected
   );
 
   assign data = adc_inputs[active];

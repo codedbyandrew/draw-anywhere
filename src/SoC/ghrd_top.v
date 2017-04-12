@@ -1,4 +1,4 @@
-SPIRX`default_nettype none
+`default_nettype none
 // ============================================================================
 // Copyright (c) 2013 by Terasic Technologies Inc.
 // ============================================================================
@@ -470,7 +470,5 @@ altera_edge_detector pulse_debug_reset (
   defparam pulse_debug_reset.EDGE_TYPE = 1;
   defparam pulse_debug_reset.IGNORE_RST_WHILE_BUSY = 1;
 
-
-  assign
 
 endmodule
