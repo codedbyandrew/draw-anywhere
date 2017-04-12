@@ -89,6 +89,9 @@ module ece453(
 	wire  [31:0] ws2812b_6_in;
 	wire  [31:0] ws2812b_7_in;
 
+  wire [7:0] receivers_out;
+  wire cs_out;
+
 	wire ws2812b_busy;
 	wire neopixel_out;
 
@@ -121,7 +124,7 @@ module ece453(
 
 	// IRQ indicating that an interrupt is active
 	assign irq_out = | (im_r & irq_r);
-	assign gpio_outputs = {neopixel_out, gpio_out_r[30:0]};
+	assign gpio_outputs = {gpio_out_r[31:9], cs_out, receivers_out[7:0]};
 
 	//*******************************************************************
 	// Register Input Equations
@@ -218,11 +221,11 @@ module ece453(
 	end
 
   spi_rotate rotator(
-      .cs(gpio_inputs[14]),
+      .cs(gpio_in_r[14]),
       .active(chip_select_r[2:0]),
-      .adc_inputs(gpio_inputs[22:15]),
-      .data(gpio_outputs[8]),
-      .selected(gpio_outputs[7:0])
+      .adc_inputs(gpio_in_r[22:15]),
+      .data(cs_out),
+      .selected(receivers_out[7:0])
     );
 
 
