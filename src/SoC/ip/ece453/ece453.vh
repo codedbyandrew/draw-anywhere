@@ -62,7 +62,7 @@
 	localparam	IRQ_ADDR	= 4'b0100;
 	localparam	GPIO_IN_ADDR	= 4'b0101;
 	localparam	GPIO_OUT_ADDR	= 4'b0110;
-	localparam	CHIPSELECT_ADDR	= 4'b0111;
+	localparam	UNUSED_ADDR	= 4'b0111;
 	localparam	WS2818B_0_ADDR	= 4'b1000;
 	localparam	WS2818B_1_ADDR	= 4'b1001;
 	localparam	WS2818B_2_ADDR	= 4'b1010;

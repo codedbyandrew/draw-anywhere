@@ -1,4 +1,4 @@
-FILENAME=ws2812b
+FILENAME=draw-anywhere
 CC=arm-linux-gnueabihf-gcc
 IDIR =../include
 CFLAGS=-I$(IDIR)
@@ -8,7 +8,7 @@ ODIR=../obj
 DRV_FILES  := $(wildcard ../drivers/*.c)
 DOBJ_FILES := $(patsubst ../drivers/%.c,../obj/%.o,$(DRV_FILES))
 
-_DEPS = 
+_DEPS =
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = $(FILENAME).o
@@ -29,4 +29,4 @@ print-%  : ; @echo $* = $($*)
 .PHONY: clean
 
 clean:
-	rm -f $(FILENAME) $(ODIR)/*.o *~ core $(INCDIR)/*~ 
+	rm -f $(FILENAME) $(ODIR)/*.o *~ core $(INCDIR)/*~

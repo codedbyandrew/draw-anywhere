@@ -108,7 +108,7 @@ module ece453(
 				( (slave_address == IRQ_ADDR )       && slave_read ) 	? irq_r :
 	                        ( (slave_address == GPIO_IN_ADDR )   && slave_read ) 	? gpio_in_r :
 	                        ( (slave_address == GPIO_OUT_ADDR )  && slave_read ) 	? gpio_out_r :
-	                        ( (slave_address == CHIPSELECT_ADDR )    && slave_read ) 	? chip_select_r :
+	                        ( (slave_address == UNUSED_ADDR )    && slave_read ) 	? chip_select_r :
 	                        ( (slave_address == WS2818B_0_ADDR ) && slave_read ) 	? ws2812b_0_r :
 	                        ( (slave_address == WS2818B_1_ADDR ) && slave_read ) 	? ws2812b_1_r :
 	                        ( (slave_address == WS2818B_2_ADDR ) && slave_read ) 	? ws2812b_2_r :
@@ -163,7 +163,7 @@ module ece453(
 	assign im_in		= ( (slave_address == IM_ADDR ) 	&& slave_write ) ? slave_writedata : im_r;
 	assign gpio_in		= gpio_inputs;
 	assign gpio_out  	= ( (slave_address == GPIO_OUT_ADDR ) 	&& slave_write ) ? slave_writedata : gpio_out_r;
-  assign chip_select_in  	= ( (slave_address == CHIPSELECT_ADDR ) 	&& slave_write ) ? slave_writedata : chip_select_r;
+  assign chip_select_in  	= ( (slave_address == UNUSED_ADDR ) 	&& slave_write ) ? slave_writedata : chip_select_r;
 	assign ws2812b_0_in  	= ( (slave_address == WS2818B_0_ADDR ) 	&& slave_write ) ? slave_writedata : ws2812b_0_r;
 	assign ws2812b_1_in  	= ( (slave_address == WS2818B_1_ADDR ) 	&& slave_write ) ? slave_writedata : ws2812b_1_r;
 	assign ws2812b_2_in  	= ( (slave_address == WS2818B_2_ADDR ) 	&& slave_write ) ? slave_writedata : ws2812b_2_r;
@@ -242,17 +242,17 @@ module spi_rotate (
   assign data = adc_inputs[active];
   always @(cs, active) begin
     if(cs) begin
-      selected = 8'b0;
+      selected = 8'b11111111;
     end else begin
       case (active)
-        0: selected = 8'b00000001;
-        1: selected = 8'b00000010;
-        2: selected = 8'b00000100;
-        3: selected = 8'b00001000;
-        4: selected = 8'b00010000;
-        5: selected = 8'b00100000;
-        6: selected = 8'b01000000;
-        7: selected = 8'b10000000;
+        0: selected = 8'b11111110;
+        1: selected = 8'b11111101;
+        2: selected = 8'b11111011;
+        3: selected = 8'b11110111;
+        4: selected = 8'b11101111;
+        5: selected = 8'b11011111;
+        6: selected = 8'b10111111;
+        7: selected = 8'b01111111;
       endcase
     end
   end
