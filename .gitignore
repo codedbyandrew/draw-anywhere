@@ -5,6 +5,8 @@ Lab3/*
 src/CMakeLists.txt
 src/cmake-build-debug/*
 src/.idea/*
+site/.idea/*
+
 # Created by https://www.gitignore.io/api/c,macos
 
 ### C ###
