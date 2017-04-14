@@ -394,6 +394,9 @@ soc_system u0 (
     .hps_0_spim0_ss_3_n                                (),
     .hps_0_spim0_sclk_out_clk                          (GPIO_1[34]),
 
+    .hps_0_uart1_rxd(GPIO_1[1]),
+    .hps_0_uart1_txd(GPIO_1[3]),
+
     // I2C - Keypad
   .hps_0_i2c2_out_data           (sda_o_e),
   .hps_0_i2c2_sda            (sda_o),
