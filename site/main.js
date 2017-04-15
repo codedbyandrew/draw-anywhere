@@ -1,25 +1,5 @@
 var app = angular.module("myApp", ['ngRoute', 'ngAnimate']);
 
-app.config(['$routeProvider', '$locationProvider',
-    function ($routeProvider, $locationProvider) {
-        $locationProvider.html5Mode({
-            enabled: true,
-            requireBase: false
-        });
-        $routeProvider
-            .when("/", {
-                templateUrl: 'home.html'
-            })
-            .when("/docs", {
-                templateUrl: 'pins.html'
-            })
-            .when("/hardware", {
-                templateUrl: 'hardware.html'
-            })
-            .when("/software", {
-                templateUrl: 'software.html'
-            });
-    }]);
 
 app.controller("myCtrl", function ($scope, $routeParams, $location) {
     $scope.pins = [
@@ -61,7 +41,11 @@ app.controller("myCtrl", function ($scope, $routeParams, $location) {
         {"name": "D35", "usage": "RECEIVER1"}
     ];
 
-    $scope.location = $location;
+    $scope.location = $location.search();
+    if($scope.location.v === undefined){
+        $location.search('v', '');
+        $scope.location = $location.search();
+    }
 
     $scope.sortBy = "name";
     $scope.sortByToggle = function (name) {
@@ -74,6 +58,10 @@ app.controller("myCtrl", function ($scope, $routeParams, $location) {
         } else {
             $scope.sortBy = name;
         }
+    };
+
+    $scope.navigate = function(location){
+        $location.search('v', location);
     }
 });
 
@@ -91,7 +79,7 @@ app.directive('pageNav', function () {
     };
 });
 
-app.directive('documentationPins', function () {
+app.directive('documentation', function () {
     return {
         restrict: 'E',
         templateUrl: './directives/pins.html'
@@ -102,5 +90,19 @@ app.directive('home', function () {
     return {
         restrict: 'E',
         templateUrl: './directives/home.html'
+    };
+});
+
+app.directive('software', function () {
+    return {
+        restrict: 'E',
+        templateUrl: './directives/software.html'
+    };
+});
+
+app.directive('hardware', function () {
+    return {
+        restrict: 'E',
+        templateUrl: './directives/hardware.html'
     };
 });

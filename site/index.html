@@ -16,7 +16,10 @@
 </head>
 <body ng-controller="myCtrl as ctrl" style="margin-bottom:208px" ng-cloak>
 <page-nav></page-nav>
-<div ng-view=""></div>
+<div ng-if="location.v == ''"><home></home></div>
+<software ng-if="location.v == 'software'"></software>
+<hardware ng-if="location.v == 'hardware'"></hardware>
+<documentation ng-if="location.v == 'docs'"></documentation>
 <page-footer></page-footer>
 <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
         integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
