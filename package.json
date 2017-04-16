@@ -1,0 +1,40 @@
+{
+  "name": "draw-anywhere",
+  "version": "0.1.0",
+  "main": "main.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codedbyandrew/draw-anywhere"
+  },
+  "dependencies": {
+    "angular": "^1.6.2",
+    "angular-animate": "^1.6.2",
+    "angular-bootstrap-colorpicker": "^3.0.25",
+    "angular-canvas-painter": "^0.6.0",
+    "angular-hotkeys": "^1.7.0",
+    "angular-ui-bootstrap": "^2.5.0",
+    "angular-ui-switch": "^0.1.1",
+    "angularjs-color-picker": "^3.2.1",
+    "bootstrap": "^3.3.7",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "mdi": "^1.8.36",
+    "ocrad.js": "0.0.1",
+    "robotjs": "^0.4.5",
+    "serialport": "^4.0.7",
+    "tinycolor2": "^1.4.1",
+    "trim-canvas": "^0.1.1"
+  },
+  "devDependencies": {
+    "electron": "^1.6.2",
+    "electron-packager": "^8.5.2",
+    "electron-rebuild": "^1.5.7"
+  },
+  "scripts": {
+    "prestart": "npm install",
+    "start": "electron .",
+    "install": "electron-rebuild",
+    "pack": "electron-packager . 'Draw Anywhere' --overwrite"
+  }
+}

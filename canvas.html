@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="canvas">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas</title>
+    <link rel="stylesheet" href="./node_modules/font-awesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="./node_modules/mdi/css/materialdesignicons.min.css"/>
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./node_modules/angular-hotkeys/build/hotkeys.min.css"/>
+    <link rel="stylesheet" href="./node_modules/angular-ui-switch/angular-ui-switch.min.css"/>
+    <link rel="stylesheet" href="./node_modules/angularjs-color-picker/dist/angularjs-color-picker.min.css"/>
+    <link rel="stylesheet"
+          href="./node_modules/angularjs-color-picker/dist/themes/angularjs-color-picker-bootstrap.min.css"/>
+    <link href="canvas.css" rel="stylesheet">
+</head>
+<body ng-controller="CanvasCtrl as canvasCtrl"
+      ng-class="[canvasCtrl.currentlyTransparent ? 'transparent' : 'vibrant',
+                canvasCtrl.drawing ? 'drawing': '',
+                (canvasCtrl.theme == 'dark' || canvasCtrl.theme == 'ultra-dark') ? 'dark' : 'light']">
+<script type="text/ng-template" id="strokeAdjustTemplate.html">
+    <form>
+        <div class="form-group">
+            <label>Line weight</label>
+            <div class="center-parent">
+                <div id="stroke-preview-width"
+                     ng-style="{width: canvasCtrl.canvasOptions.lineWidth+'px', height: canvasCtrl.canvasOptions.lineWidth+'px'}"></div>
+            </div>
+            <input type="range" min="2" max="20" ng-model="canvasCtrl.canvasOptions.lineWidth">
+        </div>
+        <label for="inline">Color</label><br>
+        <color-picker id="inline"
+                      ng-model="canvasCtrl.canvasOptions.color"
+                      event-api="canvasCtrl.colorPickerEvents"
+                      options="canvasCtrl.colorPickerConfig">
+        </color-picker>
+    </form>
+</script>
+<script type="text/ng-template" id="OCRTemplate.html">
+    <form>
+        <div class="form-group">
+            <label>Text Recognition</label>
+            <textarea ng-model="canvasCtrl.recognizedText"
+                      class="form-control"
+                      placeholder="No recognized text yet..."></textarea>
+            <small class="form-text text-muted">Works best with neat dark text.</small>
+        </div>
+    </form>
+</script>
+<script type="text/ng-template" id="configurationTemplate.html">
+    <form>
+        <label><i class="mdi"
+                  ng-class="canvasCtrl.gridVisible ? 'mdi-grid' : 'mdi-grid-off'"
+                  aria-hidden="true"></i>Grid</label>
+        <div class="right-config">
+            <switch id="enabled" name="enabled" ng-model="canvasCtrl.gridVisible" class="green" size="small"></switch>
+        </div>
+        <div class="hr-divider"></div>
+        <label><i class="mdi mdi-box-shadow" aria-hidden="true"></i>Line shadow</label>
+        <div class="right-config">
+            <switch id="enabled" name="enabled" ng-model="canvasCtrl.lineShadow" class="green" size="small"></switch>
+        </div>
+        <div class="hr-divider"></div>
+        <label><i class="mdi mdi-white-balance-sunny" aria-hidden="true"></i>Theme</label>
+        <div class="right-config">
+            <select ng-model="canvasCtrl.theme" ng-change="canvasCtrl.updateTheme()">
+                <option value="ultra-dark">Ultra Dark</option>
+                <option value="dark">Dark</option>
+                <option value="selection">Clear Light</option>
+                <option value="titlebar">Light</option>
+                <option value="medium-light">Medium Light</option>
+                <option value="light">Ultra Light</option>
+            </select>
+        </div>
+        <div class="hr-divider"></div>
+        <label><i class="mdi" ng-class="canvasCtrl.currentPort ? 'mdi-pencil' : 'mdi-pencil-off' "
+                  aria-hidden="true"></i>USB</label>
+        <div class="right-config">
+            <select ng-model="canvasCtrl.currentPort"
+                    ng-options="f as f.comName for f in canvasCtrl.ports"
+                    ng-change="canvasCtrl.setPort()">
+            </select>
+        </div>
+        <div class="hr-divider"></div>
+        <label><i class="mdi mdi-auto-fix" aria-hidden="true"></i>Quick Toggle</label>
+        <div class="right-config">
+            <select ng-model="canvasCtrl.toggle" ng-options="f.value for f in canvasCtrl.quickToggleOptions">
+            </select>
+        </div>
+    </form>
+</script>
+
+<div id="title-back"></div>
+<div id="title">
+    <div id="title-inner">
+        <span>Draw Anywhere - Canvas</span>
+    </div>
+</div>
+<div id="toolbar"
+     ng-class="{'rotated':canvasCtrl.verticalToolbar}">
+    <button id="preview"
+            title="Adjust color & line weight"
+            uib-popover-template="canvasCtrl.strokeAdjustTemplate"
+            popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
+            popover-trigger="'outsideClick'"
+            popover-append-to-body="true">
+        <div id="stroke-preview"
+             ng-class="{'shadow':canvasCtrl.lineShadow}">
+            <div style="width:100%; height:100%; border-radius:100px"
+                 ng-style="{width: canvasCtrl.canvasOptions.lineWidth+'px', height: canvasCtrl.canvasOptions.lineWidth+'px', background: canvasCtrl.canvasOptions.color}"></div>
+        </div>
+    </button>
+    <div class="separator-vertical"></div>
+    <button uib-popover-template="canvasCtrl.configurationTemplate"
+            title="Settings"
+            popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
+            popover-trigger="'outsideClick'" popover-append-to-body="true" type="button">
+        <i class="mdi mdi-settings" aria-hidden="true"></i>
+    </button>
+    <button ng-click="canvasCtrl.toggleEraser()"
+            title="Erase"
+            ng-class="{'enabled': canvasCtrl.erasing}">
+        <i class="mdi mdi-eraser" aria-hidden="true"></i>
+    </button>
+    <button ng-disabled="canvasCtrl.version == 0"
+            ng-click="canvasCtrl.version = canvasCtrl.version - 1"
+            title="Undo last stroke">
+        <i class="mdi mdi-undo" aria-hidden="true"></i>
+    </button>
+    <button ng-disabled="canvasCtrl.version == 0"
+            title="Clear canvas">
+        <i class="mdi mdi-delete" aria-hidden="true" ng-click="canvasCtrl.version = 0"></i>
+    </button>
+    <button title="Text recognition"
+            ng-click="canvasCtrl.OCR = !canvasCtrl.OCR"
+            popover-placement="{{canvasCtrl.getTooltipPlacement()}}"
+            popover-is-open="canvasCtrl.OCR"
+            popover-append-to-body="true"
+            ng-class="{'enabled': canvasCtrl.OCR}"
+            uib-popover-template="canvasCtrl.OCRTemplate">
+        <i class="mdi" ng-class="canvasCtrl.OCR? 'mdi-camera' : 'mdi-camera-off'" aria-hidden="true"></i>
+    </button>
+    <button ng-click="canvasCtrl.toggleVibrancy()"
+            title="Toggle transparency">
+        <i class="mdi" ng-class="canvasCtrl.currentlyTransparent ? 'mdi-eye-off' : 'mdi-eye'" aria-hidden="true"></i>
+    </button>
+    <button ng-disabled="canvasCtrl.version == 0"
+            ng-click="canvasCtrl.copyToClipboard()"
+            title="Copy canvas">
+        <i class="mdi mdi-clipboard-outline" aria-hidden="true"></i>
+    </button>
+    <button ng-disabled="canvasCtrl.version == 0"
+            ng-click="canvasCtrl.saveCanvas()"
+            title="Save canvas">
+        <i class="mdi mdi-content-save" aria-hidden="true"></i>
+    </button>
+    <button ng-click="canvasCtrl.verticalToolbar = !canvasCtrl.verticalToolbar"
+            title="Rotate toolbar">
+        <i class="mdi"
+           ng-class="canvasCtrl.verticalToolbar?'mdi-rotate-left-variant mdi-rotate-90':'mdi-rotate-right-variant'"
+           aria-hidden="true"></i>
+    </button>
+    <button ng-draggable="canvasCtrl.dragOptions"
+            title="Drag toolbar">
+        <i class="mdi mdi-drag" ng-class="{'mdi-rotate-90':canvasCtrl.verticalToolbar}" aria-hidden="true"></i>
+    </button>
+</div>
+
+<div id="drag-region" ng-class="{'grid': canvasCtrl.gridVisible}"></div>
+<div id="cover" ng-show="canvasCtrl.cover"></div>
+<div pw-canvas
+     options="canvasCtrl.canvasOptions"
+     class="canvas"
+     version="canvasCtrl.version"
+     ng-mousedown="canvasCtrl.drawing = true"
+     ng-mouseup="canvasCtrl.drawing = false">
+</div>
+<div id="credits">
+    <button title="Github page"
+            ng-click="canvasCtrl.openInBrowser('https://github.com/codedbyandrew/draw-anywhere')">
+        <i class="mdi mdi-github-circle" aria-hidden="true"></i>
+        <span>Github</span>
+    </button>
+    <button title="Keyboard shortcuts" ng-click="canvasCtrl.displayHelp()">
+        <i class="mdi mdi-help-circle" aria-hidden="true"></i>
+        <span>Shortcuts</span>
+    </button>
+</div>
+<script type="text/javascript" src="./canvas.js"></script>
+</body>
+</html>
+
