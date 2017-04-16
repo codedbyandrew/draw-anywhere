@@ -1,0 +1,26 @@
+<nav class="navbar navbar-inverse bg-inverse navbar-toggleable-md">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+            data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="container">
+        <a ng-click="navigate('')"><h1 class="navbar-brand mb-0">Draw Anywhere</h1></a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item" ng-class="{active: location.v == 'software'}">
+                    <a class="nav-link" ng-click="navigate('software')">Software</a>
+                </li>
+                <li class="nav-item" ng-class="{active: location.v == 'hardware'}">
+                    <a class="nav-link" ng-click="navigate('hardware')">Hardware</a>
+                </li>
+                <li class="nav-item" ng-class="{active: location.v == 'docs'}">
+                    <a class="nav-link" ng-click="navigate('docs')">Documentation</a>
+                </li>
+            </ul>
+            <a class="nav-link text-muted" href="https://github.com/codedbyandrew/draw-anywhere">
+                <i class="fa fa-github" aria-hidden="true"></i> Github
+            </a>
+        </div>
+    </div>
+</nav>

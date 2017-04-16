@@ -1,0 +1,31 @@
+<div class="container py-5">
+    <h3>Documentation
+        <small class="text-muted"> Pin Assignments</small>
+    </h3>
+    <hr class="my-4"/>
+    <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search pins..." ng-model="query">
+    </div>
+    <table class="table table-sm mt-3">
+        <thead class="thead-default">
+        <tr>
+            <th ng-click="sortByToggle('name')">
+                <i class="fa fa-sort" ng-show="sortBy != 'name' && sortBy != '-name'" aria-hidden="true"></i>
+                <i class="fa fa-sort-asc" ng-show="sortBy == 'name'" aria-hidden="true"></i>
+                <i class="fa fa-sort-desc" ng-show="sortBy == '-name'" aria-hidden="true"></i> Port name
+            </th>
+            <th ng-click="sortByToggle('usage')">
+                <i class="fa fa-sort" ng-show="sortBy != 'usage' && sortBy != '-usage'" aria-hidden="true"></i>
+                <i class="fa fa-sort-asc" ng-show="sortBy == 'usage'" aria-hidden="true"></i>
+                <i class="fa fa-sort-desc" ng-show="sortBy == '-usage'" aria-hidden="true"></i> Use
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="pin in pins | filter: query | orderBy: sortBy">
+            <th scope="row">{{pin.name}}</th>
+            <td>{{pin.usage}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
