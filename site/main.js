@@ -1,5 +1,13 @@
 var app = angular.module("myApp", ['ngRoute', 'ngAnimate']);
 
+app.config(['$routeProvider', '$locationProvider',
+    function ($routeProvider, $locationProvider) {
+        $locationProvider.html5Mode({
+            enabled: true,
+            requireBase: false
+        });
+    }
+]);
 
 app.controller("myCtrl", function ($scope, $routeParams, $location) {
     $scope.pins = [
@@ -42,7 +50,7 @@ app.controller("myCtrl", function ($scope, $routeParams, $location) {
     ];
 
     $scope.location = $location.search();
-    if($scope.location.v === undefined){
+    if ($scope.location.v === undefined) {
         $location.search('v', '');
         $scope.location = $location.search();
     }
@@ -60,7 +68,7 @@ app.controller("myCtrl", function ($scope, $routeParams, $location) {
         }
     };
 
-    $scope.navigate = function(location){
+    $scope.navigate = function (location) {
         $location.search('v', location);
     }
 });
@@ -68,41 +76,41 @@ app.controller("myCtrl", function ($scope, $routeParams, $location) {
 app.directive('pageFooter', function () {
     return {
         restrict: 'E',
-        templateUrl: './directives/page-footer.html'
+        templateUrl: './site/directives/page-footer.html'
     };
 });
 
 app.directive('pageNav', function () {
     return {
         restrict: 'E',
-        templateUrl: './directives/page-nav.html'
+        templateUrl: './site/directives/page-nav.html'
     };
 });
 
 app.directive('documentation', function () {
     return {
         restrict: 'E',
-        templateUrl: './directives/pins.html'
+        templateUrl: './site/directives/pins.html'
     };
 });
 
 app.directive('home', function () {
     return {
         restrict: 'E',
-        templateUrl: './directives/home.html'
+        templateUrl: './site/directives/home.html'
     };
 });
 
 app.directive('software', function () {
     return {
         restrict: 'E',
-        templateUrl: './directives/software.html'
+        templateUrl: './site/directives/software.html'
     };
 });
 
 app.directive('hardware', function () {
     return {
         restrict: 'E',
-        templateUrl: './directives/hardware.html'
+        templateUrl: './site/directives/hardware.html'
     };
 });

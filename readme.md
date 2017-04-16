@@ -1,3 +1,5 @@
+Documentation and explanation of features: https://codedbyandrew.github.io/draw-anywhere
+
 ## Install Guide:
 
 Install Node.js LTS (https://nodejs.org/en/download/).
@@ -8,7 +10,7 @@ Note: if the npm install command fails with an ```EACCESS``` error you may have 
 ```
 $ cd /path/to/folder 
 $ git clone https://github.com/codedbyandrew/draw-anywhere.git 
-$ cd draw-anywhere 
+$ cd draw-anywhere/app 
 $ npm install 
 $ npm start
 ```
