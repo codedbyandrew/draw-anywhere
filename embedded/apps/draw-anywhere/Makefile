@@ -1,7 +1,7 @@
 FILENAME=draw-anywhere
 CC=arm-linux-gnueabihf-gcc
 IDIR =../include
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -lm
 LIBS=
 ODIR=../obj
 

@@ -1,7 +1,7 @@
 /*
- * Draw Anywhere DE1 application
- * by Andrew Lundholm
- */
+* Draw Anywhere DE1 application
+* by Andrew Lundholm
+*/
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,85 +9,26 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <linux/spi/spidev.h>
+#include <math.h>
 #include "../include/ece453.h"
 
-#define PID "/sys/kernel/ece453/pid"
 #define SPI_DEVICE		"/dev/spidev32766.0"
 
-#define SIG_XBEE 52
+static int spi_fd;
+static uint8_t     spi_mode;
+static uint8_t     spi_bits;
+static uint32_t    spi_speed;
+static uint16_t    spi_delay;
 
-bool busy = true;
 //*****************************************************************************
-// Transfer SPI data
 //*****************************************************************************
-static void spi_rx_byte()
+static void pabort(const char *s)
 {
-  int ret;
-  uint8_t rx = 0;
-  struct spi_ioc_transfer tr = {
-  	.tx_buf = (unsigned long)tx,
-  	.rx_buf = (unsigned long)rx,
-  	.len = 1,
-  	.delay_usecs = spi_delay,
-  	.speed_hz = spi_speed,
-  	.bits_per_word = spi_bits,
-  };
-
-  ret = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &tr);
-  if (ret < 1)
-  	pabort("can't send spi message");
+  perror(s);
+  abort();
 }
-
 //*****************************************************************************
-//*****************************************************************************
-int set_pid(void)
-{
-
-	char buf[10];
-	int fd = open(PID, O_WRONLY);
-	if(fd < 0) {
-		perror("open");
-		return -1;
-	}
-	sprintf(buf, "%i", getpid());
-	if (write(fd, buf, strlen(buf) + 1) < 0) {
-		perror("fwrite");
-		return -1;
-	}
-  close(fd);
-  return 0;
-}
-
-//*****************************************************************************
-//*****************************************************************************
-int clear_pid(void)
-{
-
-	char buf[10];
-	int fd = open(PID, O_WRONLY);
-	if(fd < 0) {
-		perror("open");
-		return -1;
-	}
-
- memset(buf,0,10);
- if (write(fd, buf, strlen(buf) + 1) < 0) {
-		perror("fwrite");
-		return -1;
-	}
-  close(fd);
-  return 0;
-}
-
-//*****************************************************************************
-//*****************************************************************************
-void control_c_handler(int n, siginfo_t *info, void *unused)
-{
-  clear_pid();
-  ece453_reg_write(IM_REG, 0);
-  busy = false;
-}
-
 //*****************************************************************************
 // Modes:
 // 0 - mouse down
@@ -99,74 +40,127 @@ void serializeToJson(int mode, int x, int y){
   printf("{\"mode\":\"");
   switch(mode){
     case 0:
-      printf("down");
-      printf("\",\"x\":%d,\"y\":%d", x, y);
-      break;
+    printf("down");
+    printf("\",\"x\":%d,\"y\":%d", x, y);
+    break;
     case 1:
-      printf("drag");
-      printf("\",\"x\":%d,\"y\":%d", x, y);
-      break;
+    printf("drag");
+    printf("\",\"x\":%d,\"y\":%d", x, y);
+    break;
     case 2:
-      printf("up");
-      printf("\",\"x\":%d,\"y\":%d", x, y);
-      break;
+    printf("up");
+    printf("\",\"x\":%d,\"y\":%d", x, y);
+    break;
     case 3:
-      printf("toggle\"");
-      break;
+    printf("toggle\"");
+    break;
     default:
-      printf("UNKNOWN MODE\"");
+    printf("UNKNOWN MODE\"");
   }
   printf("}\r\n");
 }
 //*****************************************************************************
 //*****************************************************************************
-void receiveData_xbee(int n, siginfo_t *info, void *unused)
-{
+void initializeSPI(){
+  uint8_t mode = 3;
+  uint8_t bits = 8;
+  uint32_t speed = 3400000;
+  uint16_t delay = 0;
 
+  spi_fd = open(SPI_DEVICE, O_RDWR);
+  if (spi_fd < 0){
+    pabort("can't open device");
+  }
+
+  int ret;
+  ret = ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
+  if (ret == -1){
+    pabort("can't set spi mode");
+  }
+
+  ret = ioctl(spi_fd, SPI_IOC_RD_MODE, &spi_mode);
+  if (ret == -1){
+    pabort("can't get spi mode");
+  }
+
+  /*
+  * bits per word
+  */
+  ret = ioctl(spi_fd, SPI_IOC_WR_BITS_PER_WORD, &bits);
+  if (ret == -1){
+    pabort("can't set bits per word");
+  }
+
+  ret = ioctl(spi_fd, SPI_IOC_RD_BITS_PER_WORD, &spi_bits);
+  if (ret == -1){
+    pabort("can't get bits per word");
+  }
+
+  ret = ioctl(spi_fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+  if (ret == -1){
+    pabort("can't set max speed hz");
+  }
+
+  ret = ioctl(spi_fd, SPI_IOC_RD_MAX_SPEED_HZ, &spi_speed);
+  if (ret == -1){
+    pabort("can't get max speed hz");
+  }
+
+  printf("spi mode: %d\n", spi_mode);
+  printf("bits per word: %d\n", spi_bits);
+  printf("max speed: %d Hz (%d KHz)\n", spi_speed, spi_speed/1000);
+}
+//*****************************************************************************
+// Transfer SPI data
+// http://www.linuxquestions.org/questions/programming-9/spi-program-using-c-857237/
+//*****************************************************************************
+static void spi_rx_data(uint8_t rx[])
+{
+  int ret;
+  uint8_t tx[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  struct spi_ioc_transfer tr = {
+  	.tx_buf = (unsigned long)tx,
+  	.rx_buf = (unsigned long)rx,
+  	.len = 2,
+  	.delay_usecs = spi_delay,
+  	.speed_hz = spi_speed,
+  	.bits_per_word = spi_bits,
+  };
+
+  ret = ioctl(spi_fd, SPI_IOC_MESSAGE(1), &tr);
+  if (ret < 1)
+  	pabort("can't send spi message");
 }
 //*****************************************************************************
 //*****************************************************************************
 int main(int argc, char **argv)
 {
-  char *device = SPI_DEVICE;
-  uint8_t mode = 3;
-  uint8_t bits = 8;
-  uint32_t speed = 5000000;
-  uint16_t delay = 0;
+  uint8_t rx[2];
+  initializeSPI();
 
-  struct sigaction xbee_sig;
-  struct sigaction ctrl_c_sig;
-
-  // Set up handler for information sent from the kernel driver
-  xbee_sig.sa_sigaction = receiveData_xbee;
-  xbee_sig.sa_flags = SA_SIGINFO;
-  sigaction(SIG_XBEE, &xbee_sig, NULL);
-
-  // Set up handler for when the user presses CNTL-C to stop the application
-  ctrl_c_sig.sa_sigaction = control_c_handler;
-  ctrl_c_sig.sa_flags = SA_SIGINFO;
-  sigaction(SIGINT, &ctrl_c_sig, NULL);
-
-  // Configure the IP module
-  set_pid();
-
-  // enable reception of a signal when the user presses KEY[0]
-  // ece453_reg_write(IM_REG, KEY0);
-
-  /* Loop forever, waiting for interrupts */
-	while (busy) {
+  while (true) {
     for(int i=0; i < 8; i++){
-      ece453_reg_write(CHIP_SELECT_REG, i);
-
+      //usleep(250);
+      double avg = 0;
+      for(int j=0; j<100; j++){
+        ece453_reg_write(UNUSED_REG, i);
+        spi_rx_data(rx);
+        //serializeToJson(1, rx[0], rx[1]);
+        int val = (rx[0]-1)*8 + (rx[1]/16);
+        avg = avg + val;
+      }
+      avg = avg / 100.0;
+      double expr2 = (avg /9.923459);
+      double expr3 = 74.53401;
+      double expr1 = 1 + pow(expr2, expr3);
+      double div = pow(expr1,0.01944856 );
+      double dist = 1.127454  + (24.094956 /div);
+      if(avg != 2047){
+        //printf("%d, %4.2f, %4.2f \n", i,  avg, dist);
+        serializeToJson(1, dist, 15);
+      }
     }
-		sleep(86400);	/* This will end early when we get an interrupt. */
-	}
-
-  clear_pid();
-
-  // Disalbe interrupts
-  ece453_reg_write(IM_REG, 0);
-
+  }
 
   return 0;
 }

@@ -263,7 +263,7 @@ vga_pll  vga_pll_inst(
   wire sda_o;
 
   wire SPIRX;
-  wire SPICS;
+  wire SCLK;
 
 ALT_IOBUF scl_iobuf (.i(1'b0), .oe(scl_o_e), .o(scl_o), .io(GPIO_1[7])); //declared bi-directional buffer for scl
 ALT_IOBUF sda_iobuf (.i(1'b0), .oe(sda_o_e), .o(sda_o), .io(GPIO_1[11])); //declared bi-directional buffer for s
@@ -388,11 +388,11 @@ soc_system u0 (
     .hps_0_spim0_rxd                                   (SPIRX),
     .hps_0_spim0_ss_in_n                               (1'b1),
     .hps_0_spim0_ssi_oe_n                              (1'b0),
-    .hps_0_spim0_ss_0_n                                (SPICS),
+    .hps_0_spim0_ss_0_n                                (GPIO_1[34]),
     .hps_0_spim0_ss_1_n                                (),
     .hps_0_spim0_ss_2_n                                (),
     .hps_0_spim0_ss_3_n                                (),
-    .hps_0_spim0_sclk_out_clk                          (GPIO_1[34]),
+    .hps_0_spim0_sclk_out_clk                          (SCLK),
 
     .hps_0_uart1_rxd(GPIO_1[1]),
     .hps_0_uart1_txd(GPIO_1[3]),
@@ -413,7 +413,7 @@ soc_system u0 (
                                         GPIO_1[27],
                                         GPIO_1[31],
                                         GPIO_1[35],
-                                        SPICS,
+                                        SCLK,
                                         KEY,
                                         SW
                                       }),
@@ -421,14 +421,14 @@ soc_system u0 (
   .ece453_0_gpio_out_export            ({
                                           ece453_gpio_out_unused,
                                           SPIRX,
-                                          GPIO_1[5],    // ADC CS8
-                                          GPIO_1[9],    // ADC CS7
-                                          GPIO_1[13],   // ADC CS6
-                                          GPIO_1[17],   // ADC CS5
-                                          GPIO_1[21],   // ADC CS4
-                                          GPIO_1[25],   // ADC CS3
-                                          GPIO_1[29],   // ADC CS2
-                                          GPIO_1[33]    // ADC CS1
+                                          GPIO_1[5],    // ADC SCLK8
+                                          GPIO_1[9],    // ADC SCLK8
+                                          GPIO_1[13],   // ADC SCLK8
+                                          GPIO_1[17],   // ADC SCLK8
+                                          GPIO_1[21],   // ADC SCLK8
+                                          GPIO_1[25],   // ADC SCLK8
+                                          GPIO_1[29],   // ADC SCLK8
+                                          GPIO_1[33]    // ADC SCLK8
                                       }),
 
     //=====================================================================================//

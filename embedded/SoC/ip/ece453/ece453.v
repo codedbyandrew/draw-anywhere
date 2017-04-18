@@ -221,7 +221,7 @@ module ece453(
 	end
 
   spi_rotate rotator(
-      .cs(gpio_in_r[14]),
+      .sclk(gpio_in_r[14]),
       .active(chip_select_r[2:0]),
       .adc_inputs(gpio_in_r[22:15]),
       .data(cs_out),
@@ -232,29 +232,14 @@ module ece453(
 endmodule
 
 module spi_rotate (
-  input cs,
+  input sclk,
   input[2:0] active,
   input[7:0] adc_inputs,
   output data,
-  output reg [7:0] selected
+  output[7:0] selected
   );
 
   assign data = adc_inputs[active];
-  always @(cs, active) begin
-    if(cs) begin
-      selected = 8'b11111111;
-    end else begin
-      case (active)
-        0: selected = 8'b11111110;
-        1: selected = 8'b11111101;
-        2: selected = 8'b11111011;
-        3: selected = 8'b11110111;
-        4: selected = 8'b11101111;
-        5: selected = 8'b11011111;
-        6: selected = 8'b10111111;
-        7: selected = 8'b01111111;
-      endcase
-    end
-  end
+  assign selected = {sclk, sclk, sclk, sclk, sclk, sclk, sclk, sclk};
 
 endmodule
