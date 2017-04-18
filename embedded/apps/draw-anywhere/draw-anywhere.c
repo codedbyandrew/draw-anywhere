@@ -60,6 +60,10 @@ void serializeToJson(int mode, int x, int y){
   printf("}\r\n");
 }
 //*****************************************************************************
+void serialize(int x, int y){
+  printf("{\"num\": %d,\"val\":%d}\r\n", x, y );
+}
+//*****************************************************************************
 //*****************************************************************************
 void initializeSPI(){
   uint8_t mode = 3;
@@ -155,9 +159,9 @@ int main(int argc, char **argv)
       double expr1 = 1 + pow(expr2, expr3);
       double div = pow(expr1,0.01944856 );
       double dist = 1.127454  + (24.094956 /div);
-      if(avg != 2047){
+      if(i == 0 || i == 1){
         //printf("%d, %4.2f, %4.2f \n", i,  avg, dist);
-        serializeToJson(1, dist, 15);
+        serialize(i, avg);
       }
     }
   }
