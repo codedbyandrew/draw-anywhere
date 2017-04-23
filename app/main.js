@@ -15,6 +15,14 @@ var theme = 'selection';
 var currentlyTransparent = false;
 var self = this;
 
+var jsonData = {data: [0, 0, 0, 0, 0, 0, 0, 0]};
+var sender = null;
+var time;
+var initTime = Date.now();
+var lastSent = 0;
+var lastReceived = 0;
+var paused = true;
+
 self.ports = [];
 self.currentPortIndex = 0;
 
@@ -78,12 +86,24 @@ usbPort.on('open', function () {
 
 usbPort.on('data', function (data) {
     if (data != undefined) {
-        if (data.indexOf('{') == 0 && data.lastIndexOf('}') == data.length() - 1) {
+        if (data.indexOf('{') == 0) {
             // data is json
-            var obj = JSON.parse(data);
-            console.log(obj);
-        }
-        if (data.length > 0) {
+            try {
+                jsonData = JSON.parse(data);
+                if (time == undefined) {
+                    time = Date.now();
+                }
+                jsonData.rate = Date.now() - time;
+                jsonData.time = (Date.now() - initTime) / 1000;
+                time = Date.now();
+                if (paused) {
+                    sendDataToCanvas();
+                }
+                lastReceived++;
+            } catch (error) {
+
+            }
+        } else if (data.length > 0) {
             process.stdout.write('\r' + data + '\n');
         }
     }
@@ -152,6 +172,15 @@ function launchWindow(openCanvas) {
     }
 }
 
+function sendDataToCanvas() {
+    if (lastSent != lastReceived) {
+        sender.send('rxData', jsonData);
+    } else {
+        paused = true;
+    }
+    lastSent = lastReceived;
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -175,6 +204,12 @@ app.on('ready', function () {
         if (!currentlyTransparent) {
             canvas.setVibrancy(arg);
         }
+    });
+
+    ipc.on('getData', function (event, arg) {
+        sender = event.sender;
+        paused = false;
+        sendDataToCanvas();
     });
 
     ipc.on('drawableOpened', function (event, arg) {

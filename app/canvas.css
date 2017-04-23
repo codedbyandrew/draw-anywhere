@@ -416,3 +416,35 @@ button#preview {
 .color-picker-hue .color-picker-overlay {
     background: linear-gradient(to top, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 17%, rgb(0, 255, 0) 33%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 67%, rgb(255, 0, 255) 83%, rgb(255, 0, 4) 100%) !important;
 }
+
+#debug-layer {
+    position: absolute;
+    top: 36px;
+    bottom: 0;
+    overflow-x: hidden;
+    left: 0;
+    right: 0;
+}
+
+#ruler {
+    position: absolute;
+    width: 100%;
+    top: calc(50% - 12.5px);
+    height: 25px;
+    overflow: hidden;
+}
+
+#ruler .ruler-num {
+    position: relative;
+    width: 25px;
+    height: 25px;
+    float: left;
+    font-size: 12px;
+    opacity: .25;
+}
+
+nvd3 {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}

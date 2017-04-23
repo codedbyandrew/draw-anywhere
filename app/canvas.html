@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./node_modules/angular-hotkeys/build/hotkeys.min.css"/>
     <link rel="stylesheet" href="./node_modules/angular-ui-switch/angular-ui-switch.min.css"/>
     <link rel="stylesheet" href="./node_modules/angularjs-color-picker/dist/angularjs-color-picker.min.css"/>
+    <link rel="stylesheet" href="./node_modules/nvd3/build/nv.d3.css"/>
     <link rel="stylesheet"
           href="./node_modules/angularjs-color-picker/dist/themes/angularjs-color-picker-bootstrap.min.css"/>
     <link href="canvas.css" rel="stylesheet">
@@ -58,6 +59,12 @@
         <label><i class="mdi mdi-box-shadow" aria-hidden="true"></i>Line shadow</label>
         <div class="right-config">
             <switch id="enabled" name="enabled" ng-model="canvasCtrl.lineShadow" class="green" size="small"></switch>
+        </div>
+        <div class="hr-divider"></div>
+        <label><i class="mdi mdi-bug" aria-hidden="true"></i>Debug layer</label>
+        <div class="right-config">
+            <switch id="enabled" name="enabled" ng-model="canvasCtrl.debugger" ng-change="canvasCtrl.updateDebugger"
+                    class="green" size="small"></switch>
         </div>
         <div class="hr-divider"></div>
         <label><i class="mdi mdi-white-balance-sunny" aria-hidden="true"></i>Theme</label>
@@ -163,6 +170,12 @@
             title="Drag toolbar">
         <i class="mdi mdi-drag" ng-class="{'mdi-rotate-90':canvasCtrl.verticalToolbar}" aria-hidden="true"></i>
     </button>
+</div>
+<div id="debug-layer" ng-if="canvasCtrl.debugger">
+    <div id="ruler">
+        <div ng-repeat="i in canvasCtrl.range(100) track by $index" class="ruler-num">{{$index}}</div>
+    </div>
+    <nvd3 options="canvasCtrl.graphOptions" data="canvasCtrl.data"></nvd3>
 </div>
 
 <div id="drag-region" ng-class="{'grid': canvasCtrl.gridVisible}"></div>

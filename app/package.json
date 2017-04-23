@@ -13,6 +13,7 @@
     "angular-bootstrap-colorpicker": "^3.0.25",
     "angular-canvas-painter": "^0.6.0",
     "angular-hotkeys": "^1.7.0",
+    "angular-nvd3": "^1.0.9",
     "angular-ui-bootstrap": "^2.5.0",
     "angular-ui-switch": "^0.1.1",
     "angularjs-color-picker": "^3.2.1",
