@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="./node_modules/angular-ui-switch/angular-ui-switch.min.css"/>
     <link rel="stylesheet" href="./node_modules/angularjs-color-picker/dist/angularjs-color-picker.min.css"/>
     <link rel="stylesheet" href="./node_modules/nvd3/build/nv.d3.css"/>
-    <link rel="stylesheet"
-          href="./node_modules/angularjs-color-picker/dist/themes/angularjs-color-picker-bootstrap.min.css"/>
     <link href="canvas.css" rel="stylesheet">
 </head>
 <body ng-controller="CanvasCtrl as canvasCtrl"
@@ -93,6 +91,13 @@
             <select ng-model="canvasCtrl.toggle" ng-options="f.value for f in canvasCtrl.quickToggleOptions">
             </select>
         </div>
+        <div class="hr-divider"></div>
+        <label><i class="mdi mdi-target" aria-hidden="true"></i>Calibrate</label>
+        <div class="right-config">
+            <button ng-click="canvasCtrl.launchCalibration()">Create</button>
+            <button ng-click="canvasCtrl.startTraining()">Train</button>
+            <button ng-click="canvasCtrl.loadTrained()">Load</button>
+        </div>
     </form>
 </script>
 
@@ -172,12 +177,8 @@
     </button>
 </div>
 <div id="debug-layer" ng-if="canvasCtrl.debugger">
-    <div id="ruler">
-        <div ng-repeat="i in canvasCtrl.range(100) track by $index" class="ruler-num">{{$index}}</div>
-    </div>
     <nvd3 options="canvasCtrl.graphOptions" data="canvasCtrl.data"></nvd3>
 </div>
-
 <div id="drag-region" ng-class="{'grid': canvasCtrl.gridVisible}"></div>
 <div id="cover" ng-show="canvasCtrl.cover"></div>
 <div pw-canvas

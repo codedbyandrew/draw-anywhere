@@ -101,6 +101,8 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
 
     self.debugger = false;
 
+    self.training = false;
+
     ipc.send('drawableOpened');
 
     ipc.on('windowConfig', function (event, config) {
@@ -504,6 +506,27 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         if (self.debugger) {
             getData();
         }
+    };
+
+    self.launchCalibration = function () {
+        ipc.send('launchCalibration');
+    };
+
+    self.trainingRate = [{
+        values: [],
+        key: i + "",
+        color: '#292b2c',
+        strokeWidth: 2,
+        area: false
+    }];
+
+    self.startTraining = function () {
+        ipc.send('train');
+        self.training = true;
+    };
+
+    self.loadTrained = function () {
+        ipc.send('load');
     }
 
 }]);

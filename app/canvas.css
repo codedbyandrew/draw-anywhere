@@ -426,21 +426,13 @@ button#preview {
     right: 0;
 }
 
-#ruler {
+#training {
     position: absolute;
-    width: 100%;
-    top: calc(50% - 12.5px);
-    height: 25px;
-    overflow: hidden;
-}
-
-#ruler .ruler-num {
-    position: relative;
-    width: 25px;
-    height: 25px;
-    float: left;
-    font-size: 12px;
-    opacity: .25;
+    top: 36px;
+    bottom: 0;
+    overflow-x: hidden;
+    left: 0;
+    right: 0;
 }
 
 nvd3 {

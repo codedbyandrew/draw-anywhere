@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="calibrator">
+<head>
+    <meta charset="UTF-8">
+    <title>Calibration</title>
+    <link rel="stylesheet" href="./node_modules/mdi/css/materialdesignicons.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="./node_modules/angular-hotkeys/build/hotkeys.min.css"/>
+    <link href="calibrator.css" rel="stylesheet">
+</head>
+<body ng-controller="CalibratorCtrl as calibratorCtrl">
+<section class="jumbotron text-center mt-5" style="background: transparent" ng-show="calibratorCtrl.step == -1">
+    <div class="container" style="max-width: 40rem">
+        <h1 class="jumbotron-heading">Calibration</h1>
+        <p class="lead">
+            Press the stylus on the indicated spots. When the cursor is at that location, press space and wait for
+            the spot to indicate completion of that step. Start with the stylus off screen. Press the space
+            bar to begin.
+        </p>
+    </div>
+</section>
+
+<section class="jumbotron text-center mt-5" style="background: transparent"
+         ng-show="calibratorCtrl.step == calibratorCtrl.lastStep">
+    <div class="container" style="max-width: 40rem">
+        <h1 class="jumbotron-heading">
+            <i class="mdi mdi-check-circle" aria-hidden="true"></i>
+            Calibration Complete
+        </h1>
+        <p class="lead">
+            Calibration will be accurate while sensors are not moved and ambient lighting has not changed. Save your
+            calibration profile.
+        </p>
+        <button type="button" class="btn btn-secondary" ng-click="calibratorCtrl.save()">Save</button>
+    </div>
+</section>
+<div id="point-grid" ng-show="calibratorCtrl.step >= 0 && calibratorCtrl.step < calibratorCtrl.lastStep">
+    <div ng-repeat="i in calibratorCtrl.range(80) track by $index" class="grid-area">
+        <div class="point"></div>
+        <span class="badge badge-pill"
+              ng-class="[($index == calibratorCtrl.step) ?
+              (calibratorCtrl.paused && calibratorCtrl.started) ? 'badge-warning'  : 'badge-danger' : (calibratorCtrl.step > $index) ?'badge-success' : 'badge-default']">
+            {{$index+1}}</span>
+    </div>
+</div>
+
+<section id="progressbar" ng-show="calibratorCtrl.step < (calibratorCtrl.lastStep)">
+    <p class="lead">
+        <span ng-show="!calibratorCtrl.started">press space to continue</span>
+        <span ng-show="calibratorCtrl.started">gathering data</span>
+    </p>
+    <div class="progress">
+        <div class="progress-bar bg-inverse" role="progressbar"
+             ng-style="{width:((calibratorCtrl.step+1)/(calibratorCtrl.lastStep+1)*100)+'%'}">
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript" src="./calibrator.js"></script>
+</body>
+</html>
+
