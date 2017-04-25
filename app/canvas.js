@@ -525,6 +525,17 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         self.training = true;
     };
 
+    function getStylus() {
+        ipc.send('getStylus');
+    }
+
+    getStylus();
+
+    ipc.on('stylusRx', function () {
+        self.quickToggle();
+        getStylus();
+    });
+
     self.loadTrained = function () {
         ipc.send('load');
     }

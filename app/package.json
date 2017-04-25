@@ -23,7 +23,7 @@
     "jquery": "^3.1.1",
     "mdi": "^1.8.36",
     "ocrad.js": "0.0.1",
-    "robotjs": "^0.4.5",
+    "robotjs": "^0.4.7",
     "serialport": "^4.0.7",
     "tinycolor2": "^1.4.1",
     "trim-canvas": "^0.1.1"

@@ -39,8 +39,15 @@ var net;
 var trained = false;
 var trainingSender = null;
 
+var stylusEvent = null;
+
+var screenTopCornerX = 0;
+var screenTopCornerY = 0;
+
 self.ports = [];
 self.currentPortIndex = 0;
+
+var mouseDown = false;
 
 // https://github.com/EmergingTechnologyAdvisors/node-serialport/blob/4.0.7/README.md#serialport-path-options-opencallback
 var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
@@ -100,43 +107,60 @@ usbPort.on('open', function () {
     terminal.prompt();
 });
 
+
+robot.setMouseDelay(0);
 usbPort.on('data', function (data) {
     if (data != undefined) {
         if (data.indexOf('{') == 0) {
             // data is json
             try {
                 jsonData = JSON.parse(data);
-                if (calibrating) {
-                    calibrate(jsonData);
-                }
-                if (trained) {
-                    var output = net.run({
-                        0: jsonData.data[0] / 4095,
-                        1: jsonData.data[1] / 4095,
-                        2: jsonData.data[2] / 4095,
-                        3: jsonData.data[3] / 4095,
-                        4: jsonData.data[4] / 4095,
-                        5: jsonData.data[5] / 4095,
-                        6: jsonData.data[6] / 4095,
-                        7: jsonData.data[7] / 4095
-                    });
-                    if (output.onScreen > .96) {
+                if (jsonData.uart) {
+                    if (stylusEvent != null) {
+                        stylusEvent.send('stylusRx');
+                    }
+                } else if (jsonData.data) {
+                    if (calibrating) {
+                        calibrate(jsonData);
+                    }
+                    if (trained) {
+                        var output = net.run({
+                            0: jsonData.data[0] / 4095,
+                            1: jsonData.data[1] / 4095,
+                            2: jsonData.data[2] / 4095,
+                            3: jsonData.data[3] / 4095,
+                            4: jsonData.data[4] / 4095,
+                            5: jsonData.data[5] / 4095,
+                            6: jsonData.data[6] / 4095,
+                            7: jsonData.data[7] / 4095
+                        });
                         var x = Math.round(output.x * (calibratorScreenWidth - 1));
                         var y = Math.round(output.y * (calibratorScreenHeight - 1));
-                        console.log(calibratorX + x, calibratorY + y);
-                        robot.moveMouse(calibratorX + x, calibratorY + y);
+                        console.log(screenTopCornerX + x, screenTopCornerY + y, output.onScreen);
+                        if (output.onScreen > .8) {
+                            if (!mouseDown) {
+                                robot.mouseToggle("down");
+                                mouseDown = true;
+                            }
+                            robot.dragMouse(screenTopCornerX + x, screenTopCornerY + y);
+                        } else {
+                            if (mouseDown) {
+                                robot.mouseToggle("up");
+                                mouseDown = false;
+                            }
+                        }
                     }
-                }
-                if (time == undefined) {
+                    if (time == undefined) {
+                        time = Date.now();
+                    }
+                    jsonData.rate = Date.now() - time;
+                    jsonData.time = (Date.now() - initTime) / 1000;
                     time = Date.now();
+                    if (paused) {
+                        sendDataToCanvas();
+                    }
+                    lastReceived++;
                 }
-                jsonData.rate = Date.now() - time;
-                jsonData.time = (Date.now() - initTime) / 1000;
-                time = Date.now();
-                if (paused) {
-                    sendDataToCanvas();
-                }
-                lastReceived++;
             } catch (error) {
 
             }
@@ -168,16 +192,12 @@ function createCalibrationWindow(width, height, x, y) {
     if (externalDisplay) {
         x = externalDisplay.bounds.x;
         y = externalDisplay.bounds.y;
-        calibratorX = x;
-        calibratorY = y;
         calibratorScreenWidth = externalDisplay.size.width;
         calibratorScreenHeight = externalDisplay.size.height;
     } else {
         var primaryDisplay = electron.screen.getPrimaryDisplay();
         x = primaryDisplay.bounds.x;
         y = primaryDisplay.bounds.y;
-        calibratorX = x;
-        calibratorY = y;
         calibratorScreenWidth = primaryDisplay.size.width;
         calibratorScreenHeight = primaryDisplay.size.height;
     }
@@ -281,8 +301,8 @@ function launchWindow() {
         width = externalDisplay.workArea.width;
         x = externalDisplay.bounds.x + externalDisplay.workArea.x;
         y = externalDisplay.bounds.y + externalDisplay.workArea.y;
-        calibratorX = externalDisplay.bounds.x;
-        calibratorY = externalDisplay.bounds.y;
+        screenTopCornerX = externalDisplay.bounds.x;
+        screenTopCornerY = externalDisplay.bounds.y;
         calibratorScreenWidth = externalDisplay.size.width;
         calibratorScreenHeight = externalDisplay.size.height;
     } else {
@@ -291,8 +311,8 @@ function launchWindow() {
         width = primaryDisplay.workArea.width;
         x = primaryDisplay.bounds.x + primaryDisplay.workArea.x;
         y = primaryDisplay.bounds.y + primaryDisplay.workArea.x;
-        calibratorX = primaryDisplay.bounds.x;
-        calibratorY = primaryDisplay.bounds.y;
+        screenTopCornerX = primaryDisplay.bounds.x;
+        screenTopCornerY = primaryDisplay.bounds.y;
         calibratorScreenWidth = primaryDisplay.size.width;
         calibratorScreenHeight = primaryDisplay.size.height;
     }
@@ -311,7 +331,7 @@ function sendDataToCanvas() {
 var count = 0;
 var trainingData = [];
 function calibrate(data) {
-    if (count >= 50) {
+    if ((calibratorStep === -1 && count >= 400) || (calibratorStep !== -1 && count >= 20)) {
         calibrating = false;
         count = 0;
         calibratorSender.send('step-complete');
@@ -319,7 +339,7 @@ function calibrate(data) {
             //startTraining
         }
     } else {
-        trainingData.push({
+        var training = {
             input: {
                 0: data.data[0] / 4095,
                 1: data.data[1] / 4095,
@@ -330,12 +350,14 @@ function calibrate(data) {
                 6: data.data[6] / 4095,
                 7: data.data[7] / 4095
             },
-            output: {
-                onScreen: (calibratorX >= 0) ? 1 : 0,
-                x: calibratorX / (calibratorScreenWidth - 1),
-                y: calibratorY / (calibratorScreenHeight - 1)
-            }
-        });
+            output: {}
+        };
+        training.output.onScreen = (calibratorX >= 0) ? 1 : 0;
+        if (calibratorX >= 0) {
+            training.output.x = calibratorX / (calibratorScreenWidth - 1);
+            training.output.y = calibratorY / (calibratorScreenHeight - 1);
+        }
+        trainingData.push(training);
     }
     count++;
 }
@@ -397,6 +419,7 @@ app.on('ready', function () {
         calibratorX = x;
         calibratorY = y;
         calibratorStep = step;
+        console.log('step', calibratorStep, calibratorX, calibratorY);
         calibrating = true;
     });
 
@@ -423,11 +446,11 @@ app.on('ready', function () {
                 console.log(filePath);
                 fs.readFile(filePath[0], (err, data) => {
                     if (err) throw err;
-                    net = new brain.NeuralNetwork();
+                    net = new brain.NeuralNetwork({hiddenLayers: [8, 8, 8]});
                     var trainingData = JSON.parse(data);
                     var result = net.train(trainingData, {
-                        errorThresh: 0.0005,  // error threshold to reach
-                        iterations: 50000,   // maximum training iterations
+                        errorThresh: 0.00005,  // error threshold to reach
+                        iterations: 20000,   // maximum training iterations
                         log: true,           // console.log() progress periodically
                         logPeriod: 100,       // number of iterations between logging
                         learningRate: 0.05,    // learning rate
@@ -450,7 +473,6 @@ app.on('ready', function () {
     });
 
     ipc.on('load', function (event) {
-        console.log(calibratorX, calibratorY);
         dialog.showOpenDialog(
             {
                 multiSelections: false,
@@ -467,6 +489,10 @@ app.on('ready', function () {
                 trained = true;
             });
     });
+
+    ipc.on('getStylus', function (event) {
+        stylusEvent = event.sender;
+    })
 
 
 });
