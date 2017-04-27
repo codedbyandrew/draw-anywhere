@@ -18,8 +18,9 @@ const tinycolor = require('tinycolor2');
 require('angularjs-color-picker');
 const trimCanvas = require('trim-canvas');
 const Ocrad = require('ocrad.js');
+const nvd3 = require('angular-nvd3');
 
-let app = angular.module('canvas', ['ui.bootstrap', 'uiSwitch', 'ngAnimate', 'pw.canvas-painter', 'color.picker', 'cfp.hotkeys']);
+let app = angular.module('canvas', ['ui.bootstrap', 'uiSwitch', 'ngAnimate', 'pw.canvas-painter', 'color.picker', 'cfp.hotkeys', 'nvd3']);
 
 app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', function ($scope, $window, hotkeys, $document) {
     let self = this;
@@ -97,6 +98,10 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
 
     self.OCR = false;
     self.recognizedText = '';
+
+    self.debugger = false;
+
+    self.training = false;
 
     ipc.send('drawableOpened');
 
@@ -217,6 +222,15 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         }
     });
 
+    hotkeys.add({
+        combo: 'd',
+        description: 'Toggle debug layer',
+        callback: function () {
+            self.debugger = !self.debugger;
+            self.updateDebugger();
+        }
+    });
+
     let w = angular.element($window);
     w.bind('resize', function () {
         // only update canvas if it has grown in one dimension
@@ -240,6 +254,10 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         canvas.style.height = canvas.height * (1 / pixelRatio) + "px";
         self.toggleLineShadow(true);
     });
+
+    self.range = function (num) {
+        return new Array(num);
+    };
 
     self.toggleLineShadow = function (enabled) {
         let canvasTmp = document.getElementById(self.canvasOptions.customCanvasId + "Tmp");
@@ -402,6 +420,124 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     self.quickToggle = function () {
         console.log(self.toggle.fn);
         self.toggle.fn();
+    };
+
+    self.graphOptions = {
+        chart: {
+            type: 'lineChart',
+            height: 450,
+            margin: {
+                top: 20,
+                right: 20,
+                bottom: 40,
+                left: 55
+            },
+            x: function (d) {
+                return d.x;
+            },
+            y: function (d) {
+                return d.y;
+            },
+            tooltip: {
+                enabled: false
+            },
+            useInteractiveGuideline: false,
+            dispatch: {},
+            xAxis: {
+                axisLabel: '',
+                tickFormat: function (d) {
+                    return d3.format('.02f')(d);
+                },
+            },
+            yAxis: {
+                axisLabel: '',
+                axisLabelDistance: -10
+            },
+            callback: function (chart) {
+            }
+        }
+    };
+
+
+    var colors = [
+        '#292f36',
+        '#4ecdc4',
+        '#6dff79',
+        '#ffe66d',
+        '#f7fff7',
+        '#ff6b6b',
+        '#c34dcc',
+        '#644DCC'
+    ];
+    self.data = [];
+    for (var i = 0; i < 8; i++) {
+        self.data.push(
+            {
+                values: [],
+                key: i + "",
+                color: colors[i],
+                strokeWidth: 2,
+                area: true
+            }
+        )
+    }
+
+    function getData() {
+        ipc.send('getData');
+    }
+
+    var now = Date.now();
+    getData();
+    ipc.on('rxData', function (event, data) {
+        event.returnValue = '';
+        for (var i = 0; i < 8; i++) {
+            self.data[i].values.push({x: data.time, y: (data.data[i] > 4096) ? -10 : data.data[i]});
+            if (self.data[i].values.length > 40) {
+                self.data[i].values.splice(0, 1);
+            }
+        }
+        $scope.$digest();
+        if (self.debugger) {
+            setTimeout(getData, 100);
+        }
+    });
+
+    self.updateDebugger = function () {
+        if (self.debugger) {
+            getData();
+        }
+    };
+
+    self.launchCalibration = function () {
+        ipc.send('launchCalibration');
+    };
+
+    self.trainingRate = [{
+        values: [],
+        key: i + "",
+        color: '#292b2c',
+        strokeWidth: 2,
+        area: false
+    }];
+
+    self.startTraining = function () {
+        ipc.send('train');
+        self.training = true;
+    };
+
+    function getStylus() {
+        ipc.send('getStylus');
+    }
+
+    getStylus();
+
+    ipc.on('stylusRx', function () {
+        self.quickToggle();
+        getStylus();
+    });
+
+    self.loadTrained = function () {
+        ipc.send('load');
     }
 
 }]);

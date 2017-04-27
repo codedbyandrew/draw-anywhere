@@ -1,0 +1,53 @@
+html, body {
+    background: rgba(0, 0, 0, 0) !important;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    font-family: 'BlinkMacSystemFont', 'Lucida Grande', 'Segoe UI', Ubuntu, Cantarell, sans-serif;
+    overflow: hidden;
+    perspective: 500px;
+    -webkit-backface-visibility: hidden;
+    border-radius: 2px;
+}
+
+#progressbar {
+    position: absolute;
+    bottom: 100px;
+    background: transparent;
+    width: 40rem;
+    left: 50%;
+    margin-left: -20rem
+}
+
+#progressbar .progress {
+    background: none;
+    border: 1px solid #292b2c;
+}
+
+#point-grid {
+    position: absolute;
+    top: -85px;
+    left: -85px;
+    right: 0;
+    bottom: 0;
+}
+
+.grid-area {
+    position: relative;
+    float: left;
+    margin-left: 130px;
+    margin-top: 130px;
+    width: 0px;
+    height: 0px;
+}
+
+.point {
+    float: right;
+    margin-right: -10px;
+    margin-top: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: #292b2c;
+}
