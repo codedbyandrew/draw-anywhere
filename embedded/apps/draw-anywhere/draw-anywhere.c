@@ -115,7 +115,7 @@ void initializeUART(){
 //*****************************************************************************
 void initializeSPI(){
   uint8_t mode = 3;
-  uint8_t bits = 8;
+  uint8_t bits = 16;
   uint32_t speed = 1700000;
   uint16_t delay = 0;
 
@@ -166,10 +166,10 @@ void initializeSPI(){
 // Transfer SPI data
 // http://www.linuxquestions.org/questions/programming-9/spi-program-using-c-857237/
 //*****************************************************************************
-static void spi_rx_data(uint8_t rx[])
+static void spi_rx_data(uint16_t rx[])
 {
   int ret;
-  uint8_t tx[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint16_t tx[] = {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
   struct spi_ioc_transfer tr = {
     .tx_buf = (unsigned long)tx,
     .rx_buf = (unsigned long)rx,
@@ -187,12 +187,11 @@ static void spi_rx_data(uint8_t rx[])
 //*****************************************************************************
 int main(int argc, char **argv)
 {
-  uint8_t rx[2];
+  uint16_t rx[1];
   initializeSPI();
   initializeUART();
   int flags = fcntl(uart_fd, F_GETFL, 0);
   fcntl(uart_fd, F_SETFL, flags | O_NONBLOCK);
-  //tcflush(uart_fd,TCIOFLUSH);
   uint8_t buffer[6] = {0};
   float adc[8] = {0};
   double window = 10.0;
@@ -204,18 +203,16 @@ int main(int argc, char **argv)
       ece453_reg_write(UNUSED_REG, i);
       for(int j=0; j<window; j++){
         spi_rx_data(rx);
-        int val = 0;
-        if(rx[0] <= 31){
-          val = (rx[0] & 0x3F)*128 + (rx[1] >> 1);
-          if(val < .98*adc[i] || val > 1.02*adc[i]){
-            adc[i] = val;
-            j = 0;  //continue until levels off
-          }else{
-            adc[i] -= adc[i]/window;
-            adc[i] += val/window;
-          }
+        float val = 0;
+        val = (rx[0]>>1) & 0xFFF;
+        if(val < .985*adc[i] || val > 1.015*adc[i]){
           adc[i] = val;
+          j = 0;  //continue until levels off
+        }else{
+          adc[i] -= adc[i]/window;
+          adc[i] += val/window;
         }
+
       }
     }
     serialize(adc);
