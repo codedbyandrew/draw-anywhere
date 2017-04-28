@@ -418,7 +418,7 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     self.toggle = self.quickToggleOptions[1];
 
     self.quickToggle = function () {
-        console.log(self.toggle.fn);
+        console.log(self.toggle.value);
         self.toggle.fn();
     };
 
@@ -451,7 +451,10 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
             },
             yAxis: {
                 axisLabel: '',
-                axisLabelDistance: -10
+                axisLabelDistance: -10,
+                tickFormat: function (d) {
+                    return d3.format('.01f')(d);
+                }
             },
             callback: function (chart) {
             }
@@ -476,8 +479,8 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
                 values: [],
                 key: i + "",
                 color: colors[i],
-                strokeWidth: 2,
-                area: true
+                strokeWidth: 3,
+                area: false
             }
         )
     }
@@ -491,14 +494,14 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
     ipc.on('rxData', function (event, data) {
         event.returnValue = '';
         for (var i = 0; i < 8; i++) {
-            self.data[i].values.push({x: data.time, y: (data.data[i] > 4096) ? -10 : data.data[i]});
-            if (self.data[i].values.length > 40) {
+            self.data[i].values.push({x: data.time, y: data.data[i]});
+            if (self.data[i].values.length > 10) {
                 self.data[i].values.splice(0, 1);
             }
         }
         $scope.$digest();
         if (self.debugger) {
-            setTimeout(getData, 100);
+            setTimeout(getData, 200);
         }
     });
 

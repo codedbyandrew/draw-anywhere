@@ -48,22 +48,19 @@ self.ports = [];
 self.currentPortIndex = 0;
 
 var mouseDown = false;
+var lastx = null;
+var lasty = null;
+var initialMousedown;
+var firstContact = false;
+var cumulativeDistance = 0;
 
 // https://github.com/EmergingTechnologyAdvisors/node-serialport/blob/4.0.7/README.md#serialport-path-options-opencallback
 var usbPort = new SerialPort('/dev/cu.usbserial-A6005DPO',
     {
         baudRate: 115200,
-        parser: SerialPort.parsers.readline(/(?:\n)|(.*: )$|(?:.*:~\$ )$/)
+        parser: SerialPort.parsers.raw
     }
 );
-
-// interface for reading from the terminal
-// https://nodejs.org/api/readline.html#readline_readline_createinterface_options
-const terminal = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: 'DE1> '
-});
 
 // Get info about available ports
 function getPorts() {
@@ -78,77 +75,145 @@ function getPorts() {
 }
 getPorts();
 
-terminal.on('line', function (input) {
-    writeSerial(input + '\r\n');
-    terminal.prompt();
-    previousQuit = false;
-});
+var stdin = process.stdin;
+stdin.setRawMode(true);
+stdin.resume();
+stdin.setEncoding('utf8');
 
-terminal.on('SIGINT', function () {
-    if (previousQuit) {
-        usbPort.close();
-        terminal.close();
+stdin.on('data', function (key) {
+    // ctrl-c ( end of text )
+    if (key === '\u0003') {
+        if (previousQuit) {
+            usbPort.close();
+            stdin.setRawMode(false);
+            process.exit();
+        } else {
+            console.log('\rsending stop to board, ctrl-c again to quit');
+            writeSerial('\x03');
+            previousQuit = true;
+        }
     } else {
-        console.log('sending stop to board, ctrl-c again to quit');
-        writeSerial('\x03');
-        previousQuit = true;
+        // write the key to stdout all normal like
+        writeSerial(key);
+        previousQuit = false;
     }
 });
 
-// Node.js application will not terminate until the readline.Interface is closed
-// Called when close is called
-terminal.on('close', function () {
-    process.exit(0);
-});
-
 usbPort.on('open', function () {
-    // stty -echo hides echoed response.  stty echo shows response
-    writeSerial('stty -echo\r');
-    terminal.prompt();
+    writeSerial('\r');
 });
 
+function sleep(delay) {
+    var start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
+}
+
+function dist(i, j, x, y) {
+    return Math.sqrt(Math.pow((x - i), 2) + Math.pow(y - j, 2));
+}
 
 robot.setMouseDelay(0);
-usbPort.on('data', function (data) {
+function controlMouse(data) {
+    var output = net.run({
+        0: data[0] / 4095,
+        1: data[1] / 4095,
+        2: data[2] / 4095,
+        3: data[3] / 4095,
+        4: data[4] / 4095,
+        5: data[5] / 4095,
+        6: data[6] / 4095,
+        7: data[7] / 4095
+    });
+    var x = Math.round(output.x * (calibratorScreenWidth - 1));
+    var y = Math.round(output.y * (calibratorScreenHeight - 1));
+    // console.log(screenTopCornerX + x, screenTopCornerY + y, output.onScreen);
+    if (output.onScreen > .99) {
+        if (lastx === null) {
+            lastx = x;
+            lasty = y;
+        }
+        var distance = dist(lastx, lasty, x, y);
+        if (!mouseDown || (
+            (Date.now() - initialMousedown) > 300
+            || (distance < 10 && distance > 3))) {
+            if (!mouseDown) {
+                while (robot.getMousePos().x !== (screenTopCornerX + x) && robot.getMousePos().y !== (screenTopCornerY + y)) {
+                    robot.moveMouse(screenTopCornerX + x, screenTopCornerY + y);
+                }
+                robot.mouseToggle("down");
+                console.log("mouse down", robot.getMousePos().x, robot.getMousePos().y);
+                mouseDown = true;
+                firstContact = true;
+                cumulativeDistance = 0;
+            }
+            if (firstContact) {
+                firstContact = false;
+                initialMousedown = Date.now();
+            } else {
+                cumulativeDistance += distance;
+                firstContact = false;
+                if (cumulativeDistance > 30 || (Date.now() - initialMousedown > 300) && distance < 300) {
+                    console.log("mouse drag", cumulativeDistance, Date.now() - initialMousedown);
+                    robot.dragMouse(screenTopCornerX + x, screenTopCornerY + y);
+                }
+            }
+        }
+        lastx = x;
+        lasty = y;
+    } else {
+        if (mouseDown) {
+            console.log("mouse up", robot.getMousePos().x, robot.getMousePos().y);
+            robot.mouseToggle("up");
+            mouseDown = false;
+            if (Date.now() - initialMousedown < 300 && cumulativeDistance <= 30) {
+                robot.mouseClick();
+                console.log("mouse click", robot.getMousePos().x, robot.getMousePos().y);
+            }
+        }
+    }
+}
+
+var suppressOutput = false;
+var data = '';
+usbPort.on('data', function (buffer) {
+    if (!suppressOutput) {
+        process.stdout.write(buffer);
+    }
+    let delimiter = /(?:\n)/;
+    let encoding = 'utf8';
+    // Delimiter buffer saved in closure
+
+    // Collect data
+    data += buffer.toString(encoding);
+    // Split collected data by delimiter
+    var parts = data.split(delimiter);
+    data = parts.pop();
+    parts.forEach(function (part) {
+        processNewLine(part)
+    });
+});
+
+function processNewLine(data) {
     if (data != undefined) {
         if (data.indexOf('{') == 0) {
-            // data is json
             try {
                 jsonData = JSON.parse(data);
+                if (!suppressOutput) {
+                    console.log("\r\n(suppressing large output)");
+                    suppressOutput = true;
+                }
                 if (jsonData.uart) {
                     if (stylusEvent != null) {
                         stylusEvent.send('stylusRx');
+                        stylusEvent = null;
                     }
+                    console.log("toggle pushed");
                 } else if (jsonData.data) {
                     if (calibrating) {
                         calibrate(jsonData);
                     }
                     if (trained) {
-                        var output = net.run({
-                            0: jsonData.data[0] / 4095,
-                            1: jsonData.data[1] / 4095,
-                            2: jsonData.data[2] / 4095,
-                            3: jsonData.data[3] / 4095,
-                            4: jsonData.data[4] / 4095,
-                            5: jsonData.data[5] / 4095,
-                            6: jsonData.data[6] / 4095,
-                            7: jsonData.data[7] / 4095
-                        });
-                        var x = Math.round(output.x * (calibratorScreenWidth - 1));
-                        var y = Math.round(output.y * (calibratorScreenHeight - 1));
-                        console.log(screenTopCornerX + x, screenTopCornerY + y, output.onScreen);
-                        if (output.onScreen > .8) {
-                            if (!mouseDown) {
-                                robot.mouseToggle("down");
-                                mouseDown = true;
-                            }
-                            robot.dragMouse(screenTopCornerX + x, screenTopCornerY + y);
-                        } else {
-                            if (mouseDown) {
-                                robot.mouseToggle("up");
-                                mouseDown = false;
-                            }
-                        }
+                        controlMouse(jsonData.data);
                     }
                     if (time == undefined) {
                         time = Date.now();
@@ -162,14 +227,16 @@ usbPort.on('data', function (data) {
                     lastReceived++;
                 }
             } catch (error) {
-
+                suppressOutput = false;
             }
         } else if (data.length > 0) {
-            process.stdout.write('\r' + data + '\n');
+            if (suppressOutput) {
+                console.log(data);
+                suppressOutput = false;
+            }
         }
     }
-    terminal.prompt();
-});
+}
 
 usbPort.on('error', function (err) {
     console.log('Error: ', err.message);
@@ -214,7 +281,7 @@ function createCalibrationWindow(width, height, x, y) {
         fullscreen: true,
         hasShadow: true,  // buggy, on window resize transparent ghost shadows appear
         useContentSize: true,
-        vibrancy: 'selection',
+        vibrancy: 'light',
         webPreferences: {
             experimentalFeatures: true
         }
@@ -331,7 +398,7 @@ function sendDataToCanvas() {
 var count = 0;
 var trainingData = [];
 function calibrate(data) {
-    if ((calibratorStep === -1 && count >= 400) || (calibratorStep !== -1 && count >= 20)) {
+    if ((calibratorStep === -1 && count >= 800) || (calibratorStep !== -1 && count >= 10)) {
         calibrating = false;
         count = 0;
         calibratorSender.send('step-complete');
@@ -443,14 +510,17 @@ app.on('ready', function () {
                 filters: [{name: 'JSON', extensions: ['json']}]
             },
             function (filePath) {
+                if (filePath == undefined) {
+                    return;
+                }
                 console.log(filePath);
                 fs.readFile(filePath[0], (err, data) => {
                     if (err) throw err;
-                    net = new brain.NeuralNetwork({hiddenLayers: [8, 8, 8]});
+                    net = new brain.NeuralNetwork({hiddenLayers: [8, 8]});
                     var trainingData = JSON.parse(data);
                     var result = net.train(trainingData, {
                         errorThresh: 0.00005,  // error threshold to reach
-                        iterations: 20000,   // maximum training iterations
+                        iterations: 50000,   // maximum training iterations
                         log: true,           // console.log() progress periodically
                         logPeriod: 100,       // number of iterations between logging
                         learningRate: 0.05,    // learning rate
@@ -480,6 +550,9 @@ app.on('ready', function () {
                 filters: [{name: 'JSON', extensions: ['json']}]
             },
             function (filePath) {
+                if (filePath == undefined) {
+                    return;
+                }
                 net = new brain.NeuralNetwork();
                 console.log(filePath);
                 fs.readFile(filePath[0], (err, data) => {
@@ -507,7 +580,7 @@ app.on('window-all-closed', function () {
 
 app.on('will-quit', function () {
     usbPort.close();
-    terminal.close();
+    stdin.setRawMode(false);
 });
 
 app.on('activate', function () {
