@@ -67,8 +67,8 @@ void serializeToJson(int mode, int x, int y){
   printf("}\r\n");
 }
 //*****************************************************************************
-void serialize(uint16_t adc[]){
-  printf("{\"data\":[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",adc[0],adc[1],adc[2],adc[3],adc[4],adc[5],adc[6],adc[7]);
+void serialize(float adc[]){
+  printf("{\"data\":[%4.1f,%4.1f,%4.1f,%4.1f,%4.1f,%4.1f,%4.1f,%4.1f]}\r\n",adc[0],adc[1],adc[2],adc[3],adc[4],adc[5],adc[6],adc[7]);
 }
 //*****************************************************************************
 //*****************************************************************************
@@ -115,8 +115,8 @@ void initializeUART(){
 //*****************************************************************************
 void initializeSPI(){
   uint8_t mode = 3;
-  uint8_t bits = 8;
-  uint32_t speed = 3400000;
+  uint8_t bits = 16;
+  uint32_t speed = 1700000;
   uint16_t delay = 0;
 
   spi_fd = open(SPI_DEVICE, O_RDWR);
@@ -166,10 +166,10 @@ void initializeSPI(){
 // Transfer SPI data
 // http://www.linuxquestions.org/questions/programming-9/spi-program-using-c-857237/
 //*****************************************************************************
-static void spi_rx_data(uint8_t rx[])
+static void spi_rx_data(uint16_t rx[])
 {
   int ret;
-  uint8_t tx[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint16_t tx[] = {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
   struct spi_ioc_transfer tr = {
     .tx_buf = (unsigned long)tx,
     .rx_buf = (unsigned long)rx,
@@ -187,37 +187,45 @@ static void spi_rx_data(uint8_t rx[])
 //*****************************************************************************
 int main(int argc, char **argv)
 {
-  uint8_t rx[2];
+  uint16_t rx[1];
   initializeSPI();
   initializeUART();
-  uint8_t buffer[6];
-  uint16_t adc[8];
+  int flags = fcntl(uart_fd, F_GETFL, 0);
+  fcntl(uart_fd, F_SETFL, flags | O_NONBLOCK);
+  uint8_t buffer[6] = {0};
+  float adc[8] = {0};
+  double window = 10.0;
 
   while (true) {
 
     for(int i=0; i < 8; i++){
-      //usleep(250);
-      double avg = 0;
-      for(int j=0; j<100; j++){
-        ece453_reg_write(UNUSED_REG, i);
+      //usleep(50);
+      ece453_reg_write(UNUSED_REG, i);
+      for(int j=0; j<window; j++){
         spi_rx_data(rx);
-        //serializeToJson(1, rx[0], rx[1]);
-        int val = (rx[0]-1)*8 + (rx[1]/16);
-        avg = avg + val;
+        float val = 0;
+        val = (rx[0]>>1) & 0xFFF;
+        if(val < .985*adc[i] || val > 1.015*adc[i]){
+          adc[i] = val;
+          j = 0;  //continue until levels off
+        }else{
+          adc[i] -= adc[i]/window;
+          adc[i] += val/window;
+        }
+
       }
-      avg = avg / 100.0;
-      double expr2 = (avg /9.923459);
-      double expr3 = 74.53401;
-      double expr1 = 1 + pow(expr2, expr3);
-      double div = pow(expr1,0.01944856 );
-      double dist = 1.127454  + (24.094956 /div);
-      //printf("%d, %4.2f, %4.2f \n", i,  avg, dist);
-      adc[i] = avg;
     }
     serialize(adc);
 
-    read(uart_fd, buffer, 6);
-    printf("uart rx: %d,%d,%d,%d,%d,%d\n", buffer[0],buffer[1],buffer[2],buffer[3],buffer[4],buffer[5]);
+
+    int rx_length = read(uart_fd, buffer, 6);
+    if(rx_length <= 0){
+      // printf("read error \n");
+    }else if(rx_length > 0){
+      printf("{\"uart\": 1}\n");
+    }
+
+    memset(&buffer[0], 0, sizeof(buffer));
   }
 
   return 0;
