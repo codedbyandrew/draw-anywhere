@@ -200,20 +200,21 @@ int main(int argc, char **argv)
   while (true) {
 
     for(int i=0; i < 8; i++){
-      //usleep(250);
+      //usleep(50);
       ece453_reg_write(UNUSED_REG, i);
       for(int j=0; j<window; j++){
         spi_rx_data(rx);
         int val = 0;
         if(rx[0] <= 31){
-          val = (rx[0] & 0x3F)*128 + (rx[1] >> 2);
-          if(val < .97*adc[i] || val > 1.03*adc[i]){
+          val = (rx[0] & 0x3F)*128 + (rx[1] >> 1);
+          if(val < .98*adc[i] || val > 1.02*adc[i]){
             adc[i] = val;
             j = 0;  //continue until levels off
           }else{
             adc[i] -= adc[i]/window;
             adc[i] += val/window;
           }
+          adc[i] = val;
         }
       }
     }
