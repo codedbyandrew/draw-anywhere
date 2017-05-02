@@ -208,6 +208,7 @@ int main(int argc, char **argv)
         if(val < .985*adc[i] || val > 1.015*adc[i]){
           adc[i] = val;
           j = 0;  //continue until levels off
+          i = 0;
         }else{
           adc[i] -= adc[i]/window;
           adc[i] += val/window;
