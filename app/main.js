@@ -8,12 +8,13 @@ const robot = require("robotjs");
 const SerialPort = require("serialport");
 const readline = require('readline');
 const fs = require('fs');
-const brain = require('brain');
+const synaptic = require('synaptic');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let canvas = null;
 let calibrator = null;
+let trainer = null;
 var previousQuit = false;
 var theme = 'selection';
 var currentlyTransparent = false;
@@ -113,57 +114,70 @@ function dist(i, j, x, y) {
 }
 
 robot.setMouseDelay(0);
+var lastxDown;
+var lastyDown;
+var draggedCoords = [];
+var beginDragging = false;
 function controlMouse(data) {
-    var output = net.run({
-        0: data[0] / 4095,
-        1: data[1] / 4095,
-        2: data[2] / 4095,
-        3: data[3] / 4095,
-        4: data[4] / 4095,
-        5: data[5] / 4095,
-        6: data[6] / 4095,
-        7: data[7] / 4095
-    });
-    var x = Math.round(output.x * (calibratorScreenWidth - 1));
-    var y = Math.round(output.y * (calibratorScreenHeight - 1));
-    // console.log(screenTopCornerX + x, screenTopCornerY + y, output.onScreen);
-    if (output.onScreen > .99) {
-        if (lastx === null) {
-            lastx = x;
-            lasty = y;
-        }
-        var distance = dist(lastx, lasty, x, y);
-        if (!mouseDown || (
-            (Date.now() - initialMousedown) > 300
-            || (distance < 10 && distance > 3))) {
-            if (!mouseDown) {
-                while (robot.getMousePos().x !== (screenTopCornerX + x) && robot.getMousePos().y !== (screenTopCornerY + y)) {
-                    robot.moveMouse(screenTopCornerX + x, screenTopCornerY + y);
-                }
-                robot.mouseToggle("down");
-                console.log("mouse down", robot.getMousePos().x, robot.getMousePos().y);
-                mouseDown = true;
-                firstContact = true;
-                cumulativeDistance = 0;
-            }
-            if (firstContact) {
-                firstContact = false;
-                initialMousedown = Date.now();
-            } else {
-                cumulativeDistance += distance;
-                firstContact = false;
-                if (cumulativeDistance > 30 || (Date.now() - initialMousedown > 300) && distance < 300) {
-                    console.log("mouse drag", cumulativeDistance, Date.now() - initialMousedown);
-                    robot.dragMouse(screenTopCornerX + x, screenTopCornerY + y);
-                }
-            }
-        }
+    var output = fromSynapticFormat(net.activate([
+        data[0] / 4095,
+        data[1] / 4095,
+        data[2] / 4095,
+        data[3] / 4095,
+        data[4] / 4095,
+        data[5] / 4095,
+        data[6] / 4095,
+        data[7] / 4095
+    ]));
+    var x = Math.round(output.x * (calibratorScreenWidth - 1)) + screenTopCornerX;
+    var y = Math.round(output.y * (calibratorScreenHeight - 1)) + screenTopCornerY;
+    if (lastx === null) {
         lastx = x;
         lasty = y;
+    }
+    if (output.onScreen > .99) {
+        var distance = dist(lastx, lasty, x, y);
+        if (!mouseDown || (Date.now() - initialMousedown) > 300) {
+            if (!mouseDown) {
+                console.log("mouse down", robot.getMousePos().x, robot.getMousePos().y);
+                mouseDown = true;
+                initialMousedown = Date.now();
+                cumulativeDistance = 0;
+                beginDragging = false;
+                lastxDown = robot.getMousePos().x;
+                lastyDown = robot.getMousePos().y;
+            } else {
+                cumulativeDistance += distance;
+                if (cumulativeDistance > 30 || (Date.now() - initialMousedown > 300) && distance < 200) {
+                    draggedCoords.push({x: x, y: y});
+                    if (draggedCoords.length > 3) {
+                        draggedCoords.splice(0, 1);
+                        if (!beginDragging) {
+                            while (robot.getMousePos().x !== draggedCoords[0].x && robot.getMousePos().y !== draggedCoords[0].y) {
+                                robot.moveMouse(draggedCoords[0].x, draggedCoords[0].y);
+                            }
+                            robot.mouseToggle("down");
+                            beginDragging = true;
+                        }
+                        while (robot.getMousePos().x !== draggedCoords[0].x && robot.getMousePos().y !== draggedCoords[0].x) {
+                            robot.dragMouse(draggedCoords[0].x, draggedCoords[0].y);
+                        }
+                        console.log("mouse drag", robot.getMousePos().x, robot.getMousePos().y, cumulativeDistance, Date.now() - initialMousedown);
+                        robot.dragMouse(draggedCoords[0].x, draggedCoords[0].y);
+                        lastxDown = robot.getMousePos().x;
+                        lastyDown = robot.getMousePos().y;
+                    }
+                }
+            }
+        }
     } else {
         if (mouseDown) {
-            console.log("mouse up", robot.getMousePos().x, robot.getMousePos().y);
+            while (robot.getMousePos().x !== lastxDown && robot.getMousePos().y !== lastyDown) {
+                robot.dragMouse(lastxDown, lastyDown);
+            }
             robot.mouseToggle("up");
+            draggedCoords = [];
+            console.log("mouse up", robot.getMousePos().x, robot.getMousePos().y);
             mouseDown = false;
             if (Date.now() - initialMousedown < 300 && cumulativeDistance <= 30) {
                 robot.mouseClick();
@@ -171,6 +185,8 @@ function controlMouse(data) {
             }
         }
     }
+    lastx = x;
+    lasty = y;
 }
 
 var suppressOutput = false;
@@ -245,7 +261,13 @@ usbPort.on('error', function (err) {
 function writeSerial(data) {
     usbPort.write(data, function (err) {
         if (err) {
-            return console.log('Error on write: ', err.message);
+            usbPort.open(function () {
+                if (usbPort.isOpen()) {
+                    writeSerial(data);
+                }
+            });
+            console.log('Error on write: ', err.message);
+            console.log('Attempting to open port');
         }
     });
 }
@@ -289,7 +311,7 @@ function createCalibrationWindow(width, height, x, y) {
 
     // and load the index.html of the app.
     calibrator.loadURL(url.format({
-        pathname: path.join(__dirname, 'calibrator.html'),
+        pathname: path.join(__dirname, 'calibrator/calibrator.html'),
         protocol: 'file:',
         slashes: true
     }));
@@ -308,6 +330,46 @@ function createCalibrationWindow(width, height, x, y) {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         calibrator = null;
+    });
+}
+
+function launchTrainerWindow() {
+    trainer = new BrowserWindow({
+        width: 800,
+        height: 800,
+        transparent: false,
+        resizable: true,
+        fullscreenable: false,
+        fullscreen: false,
+        hasShadow: true,  // buggy, on window resize transparent ghost shadows appear
+        useContentSize: true,
+        vibrancy: 'medium-light',
+        webPreferences: {
+            experimentalFeatures: true
+        }
+    });
+
+    // and load the index.html of the app.
+    trainer.loadURL(url.format({
+        pathname: path.join(__dirname, 'trainer/trainer.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+
+    trainer.once('ready-to-show', function () {
+        trainer.show();
+        trainer.focus();
+    });
+
+    // Open the DevTools.
+    // canvas.webContents.openDevTools();
+
+    // Emitted when the window is closed.
+    trainer.on('closed', function () {
+        // Dereference the window object, usually you would store windows
+        // in an array if your app supports multi windows, this is the time
+        // when you should delete the corresponding element.
+        trainer = null;
     });
 }
 
@@ -334,7 +396,7 @@ function createCanvasWindow(width, height, x, y) {
 
     // and load the index.html of the app.
     canvas.loadURL(url.format({
-        pathname: path.join(__dirname, 'canvas.html'),
+        pathname: path.join(__dirname, 'canvas/canvas.html'),
         protocol: 'file:',
         slashes: true
     }));
@@ -429,6 +491,32 @@ function calibrate(data) {
     count++;
 }
 
+function toSynapticFormat(data) {
+    var inputs = [];
+    var outputs = [];
+
+    for (var i = 0; i < 8; i++) {
+        inputs[i] = data.input[i];
+    }
+
+    outputs[0] = data.output.onScreen;
+    outputs[1] = (data.output.x === undefined) ? null : data.output.x;
+    outputs[2] = (data.output.y === undefined) ? null : data.output.y;
+
+    return {
+        input: inputs,
+        output: outputs
+    }
+}
+
+function fromSynapticFormat(data) {
+    return {
+        onScreen: data[0],
+        x: data[1],
+        y: data[2]
+    }
+}
+
 var currentIteration;
 var currentError;
 function trainingCallback(data) {
@@ -502,44 +590,56 @@ app.on('ready', function () {
             });
     });
 
-    ipc.on('train', function (event) {
-        dialog.showOpenDialog(
-            {
-                multiSelections: false,
-                openDirectory: false,
-                filters: [{name: 'JSON', extensions: ['json']}]
-            },
-            function (filePath) {
-                if (filePath == undefined) {
-                    return;
-                }
-                console.log(filePath);
-                fs.readFile(filePath[0], (err, data) => {
-                    if (err) throw err;
-                    net = new brain.NeuralNetwork({hiddenLayers: [8, 8]});
-                    var trainingData = JSON.parse(data);
-                    var result = net.train(trainingData, {
-                        errorThresh: 0.00005,  // error threshold to reach
-                        iterations: 50000,   // maximum training iterations
-                        log: true,           // console.log() progress periodically
-                        logPeriod: 100,       // number of iterations between logging
-                        learningRate: 0.05,    // learning rate
-                        callback: trainingCallback
-                    });
-                    console.log(JSON.stringify(result));
-                    trained = true;
-                    dialog.showSaveDialog(
-                        {
-                            title: 'Save neural net',
-                            filters: [{name: 'JSON', extensions: ['json']}]
-                        }
-                        , function (fileName) {
-                            fs.writeFile(fileName, JSON.stringify(net.toJSON()), function (err) {
-                            });
-                        });
-                });
+    ipc.on('openTrainer', function () {
+        launchTrainerWindow();
+    });
+
+    ipc.on('train', function (event, arg) {
+        fs.readFile(arg.fileName, (err, data) => {
+            if (err) throw err;
+            var brainTrain = JSON.parse(data);
+            var synapticTrain = [];
+            for (var i = 0; i < brainTrain.length; i++) {
+                synapticTrain.push(toSynapticFormat(brainTrain[i]));
             }
-        );
+            if (net === undefined) {
+                switch (arg.architecture.length) {
+                    case 1: net = new synaptic.Architect.Perceptron(8,arg.architecture[0],3);
+                        break;
+                    case 2: net = new synaptic.Architect.Perceptron(8,arg.architecture[0],arg.architecture[2],3);
+                        break;
+                    case 3: net = new synaptic.Architect.Perceptron(8,arg.architecture[0],arg.architecture[1],arg.architecture[2],3);
+                        break;
+                    case 4: net = new synaptic.Architect.Perceptron(8,arg.architecture[0],arg.architecture[1],arg.architecture[2],arg.architecture[3],3);
+                        break;
+                    case 5: net = new synaptic.Architect.Perceptron(8,arg.architecture[0],arg.architecture[1],arg.architecture[2],arg.architecture[3],arg.architecture[4],3);
+                        break;
+                }
+            }
+            var trainer = new synaptic.Trainer(net);
+            var result = trainer.train(synapticTrain, {
+                rate: arg.rate,
+                iterations: arg.iterations,
+                error: arg.error,
+                shuffle: false,
+                log: 1000,
+                cost: synaptic.Trainer.cost.MSE
+            });
+            console.log(JSON.stringify(result));
+            trained = true;
+            dialog.showSaveDialog(
+                {
+                    title: 'Save neural net',
+                    filters: [{name: 'JSON', extensions: ['json']}]
+                }
+                , function (fileName) {
+                    if(fileName === undefined){
+                        return;
+                    }
+                    fs.writeFile(fileName, JSON.stringify(net.toJSON()), function (err) {
+                    });
+                });
+        });
     });
 
     ipc.on('load', function (event) {
@@ -550,14 +650,14 @@ app.on('ready', function () {
                 filters: [{name: 'JSON', extensions: ['json']}]
             },
             function (filePath) {
-                if (filePath == undefined) {
+                if (filePath === undefined) {
                     return;
                 }
-                net = new brain.NeuralNetwork();
                 console.log(filePath);
                 fs.readFile(filePath[0], (err, data) => {
                     if (err) throw err;
-                    net.fromJSON(JSON.parse(data));
+                    net = synaptic.Network.fromJSON(JSON.parse(data));
+
                 });
                 trained = true;
             });
@@ -565,9 +665,11 @@ app.on('ready', function () {
 
     ipc.on('getStylus', function (event) {
         stylusEvent = event.sender;
-    })
+    });
 
-
+    ipc.on('toggleTrained', function (event) {
+        trained = !trained;
+    });
 });
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -589,8 +691,9 @@ app.on('activate', function () {
 
         if (canvas !== null) {
             canvas.show();
+        } else {
+            launchWindow();
         }
-        launchWindow();
 
     }
 );

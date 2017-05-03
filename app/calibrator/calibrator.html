@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Calibration</title>
-    <link rel="stylesheet" href="./node_modules/mdi/css/materialdesignicons.min.css"/>
+    <link rel="stylesheet" href="../node_modules/mdi/css/materialdesignicons.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <link rel="stylesheet" href="./node_modules/angular-hotkeys/build/hotkeys.min.css"/>
+    <link rel="stylesheet" href="../node_modules/angular-hotkeys/build/hotkeys.min.css"/>
     <link href="calibrator.css" rel="stylesheet">
 </head>
 <body ng-controller="CalibratorCtrl as calibratorCtrl">
@@ -32,7 +32,7 @@
             Calibration will be accurate while sensors are not moved and ambient lighting has not changed. Save your
             calibration profile.
         </p>
-        <button type="button" class="btn btn-secondary" ng-click="calibratorCtrl.save()">Save</button>
+        <button type="button" class="btn" ng-click="calibratorCtrl.save()">Save</button>
     </div>
 </section>
 <div id="point-grid" ng-show="calibratorCtrl.step >= 0 && calibratorCtrl.step < calibratorCtrl.lastStep">
@@ -57,7 +57,7 @@
     </div>
 </section>
 
-<script type="text/javascript" src="./calibrator.js"></script>
+<script type="text/javascript" src="calibrator.js"></script>
 </body>
 </html>
 

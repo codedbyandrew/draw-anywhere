@@ -26,6 +26,17 @@ app.controller('CalibratorCtrl', ['hotkeys', '$scope', function (hotkeys, $scope
         }
     });
 
+    hotkeys.add({
+        combo: 'command+z',
+        description: 'Undo last stroke',
+        callback: function () {
+            if (self.step > -1) {
+                self.step--;
+                ipc.send('calibrateUndo');
+            }
+        }
+    });
+
     self.range = function (num) {
         return new Array(num);
     };

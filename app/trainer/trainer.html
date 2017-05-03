@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="trainer">
+<head>
+    <meta charset="UTF-8">
+    <title>Neural Network Trainer</title>
+    <link rel="stylesheet" href="../node_modules/mdi/css/materialdesignicons.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="../node_modules/angular-hotkeys/build/hotkeys.min.css"/>
+    <link href="trainer.css" rel="stylesheet">
+    <script>
+        window.jQuery = window.$ = require('jquery');
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+            integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+            integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+            crossorigin="anonymous"></script>
+</head>
+<body ng-controller="TrainerCtrl as trainerCtrl" ng-cloak>
+<section class="container my-5" style="background: transparent">
+    <h3>Training</h3>
+    <p class="lead">
+        Improve stylus accuracy by training the neural network. Once training has begun, <b>it cannot be stopped until
+        it is complete.</b> You can further train a previous network and save the trained network when it's done.
+    </p>
+</section>
+<section class="container">
+    <div class="form-group row">
+        <label class="col-6 col-form-label">Load Training Data</label>
+        <div class="col-6">
+            <button class="btn" ng-click="trainerCtrl.openFile()">Browse</button>
+            <span ng-show="trainerCtrl.form.fileName==''">No file chosen</span>
+            <div style="font-size:12px;">{{trainerCtrl.form.fileName}}</div>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="iterations" class="col-6 col-form-label">Iterations</label>
+        <div class="col-6">
+            <input class="form-control" type="number" type="text" step="1000" min="0" id="iterations"
+                   ng-model="trainerCtrl.form.iterations">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="learning-rate" class="col-6 col-form-label">Learning Rate</label>
+        <div class="col-6">
+            <input class="form-control" type="number" ng-model="trainerCtrl.form.rate" step=".01" min="0" max="1"
+                   id="learning-rate">
+        </div>
+    </div>
+    <button class="btn btn-link px-0 btn-sm"
+            type="button" data-toggle="collapse"
+            data-target="#collapseExample"
+            aria-expanded="false"
+            aria-controls="collapseExample"
+            ng-click="trainerCtrl.advanced = !trainerCtrl.advanced">
+        <i class="mdi" ng-class="trainerCtrl.advanced ? 'mdi-chevron-right' : 'mdi-chevron-down'"
+           aria-hidden="true"></i>
+        <span ng-show="trainerCtrl.advanced">show advanced</span>
+        <span ng-hide="trainerCtrl.advanced">hide advanced</span>
+    </button>
+    <div class="collapse" id="collapseExample">
+        <div class="form-group row">
+            <label for="error" class="col-6 col-form-label">Error</label>
+            <div class="col-6">
+                <input class="form-control" type="number" ng-model="trainerCtrl.form.error" min="0" max="1"
+                       step=".00001" id="error">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="hidden-layers" class="col-6 col-form-label">Hidden Layers</label>
+            <div class="col-6">
+                <input class="form-control" type="number" ng-model="trainerCtrl.form.layers" min="1" max="5" step="1"
+                       id="hidden-layers" ng-change="trainerCtrl.updateArray()">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="layer-architecture" class="col-6 col-form-label">Architecture</label>
+            <div class="col-6">
+                <div class="input-group">
+                    <input ng-repeat="i in trainerCtrl.range(trainerCtrl.form.layers) track by $index"
+                           class="form-control" type="number" value="8" step="1" min="3" id="layer-architecture"
+                           ng-disabled="$index == 0"
+                           ng-model="trainerCtrl.form.architecture[$index]"
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<hr class="mb-0">
+<section class="container mb-3">
+    <button class="btn btn-primary ml-3 mt-3"
+            type="button"
+            ng-click="trainerCtrl.startTraining()"
+            style="float:right"
+            ng-hide="trainerCtrl.training"
+    >
+        <span>Load network</span>
+    </button>
+    <button class="btn btn-success ml-3 mt-3"
+            type="button"
+            ng-click="trainerCtrl.startTraining()"
+            style="float:right"
+            ng-hide="trainerCtrl.training"
+    >
+        <span>Save network</span>
+    </button>
+    <button class="btn btn-danger ml-3 mt-3"
+            type="button"
+            ng-click="trainerCtrl.startTraining()"
+            style="float:right"
+            ng-hide="trainerCtrl.training"
+    >
+        <span>Reset network</span>
+    </button>
+    <button class="btn btn-warning ml-3 mt-3"
+            type="button"
+            ng-click="trainerCtrl.startTraining()"
+            style="float:right"
+            ng-hide="trainerCtrl.training"
+    >
+        <span>Start training</span>
+    </button>
+</section>
+<script type="text/javascript" src="./trainer.js"></script>
+</body>
+</html>
+

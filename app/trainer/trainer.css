@@ -1,0 +1,8 @@
+html, body {
+    background: rgba(0, 0, 0, 0) !important;
+    margin: 0;
+    font-family: 'BlinkMacSystemFont', 'Lucida Grande', 'Segoe UI', Ubuntu, Cantarell, sans-serif;
+    perspective: 500px;
+    -webkit-backface-visibility: hidden;
+    border-radius: 2px;
+}

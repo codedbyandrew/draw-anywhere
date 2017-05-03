@@ -101,8 +101,6 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
 
     self.debugger = false;
 
-    self.training = false;
-
     ipc.send('drawableOpened');
 
     ipc.on('windowConfig', function (event, config) {
@@ -228,6 +226,14 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         callback: function () {
             self.debugger = !self.debugger;
             self.updateDebugger();
+        }
+    });
+
+    hotkeys.add({
+        combo: 'p',
+        description: 'Pause/Resume stylus input',
+        callback: function () {
+            ipc.send('toggleTrained');
         }
     });
 
@@ -515,17 +521,8 @@ app.controller('CanvasCtrl', ['$scope', '$window', 'hotkeys', '$document', funct
         ipc.send('launchCalibration');
     };
 
-    self.trainingRate = [{
-        values: [],
-        key: i + "",
-        color: '#292b2c',
-        strokeWidth: 2,
-        area: false
-    }];
-
     self.startTraining = function () {
-        ipc.send('train');
-        self.training = true;
+        ipc.send('openTrainer');
     };
 
     function getStylus() {
